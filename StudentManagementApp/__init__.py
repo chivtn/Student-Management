@@ -1,20 +1,30 @@
+#_init_.py
 from flask import Flask
-from urllib.parse import quote
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
-app = Flask(__name__)
-app.secret_key = 'GHFGH&*%^$^*(JHFGHF&Y*R%^$%$^&*TGYGJHFHGVJHGY'
-# Chi
-# app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:pass@localhost:3306/hocsinhdb?charset=utf8mb4"
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/hocsinhdb?charset=utf8mb4"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
-# app.config['soluong']=40
-# app.config['maxtuoi']=20
-# app.config['mintuoi']=15
-# app.config['nambatdau']=2023
+db = SQLAlchemy()
+login = LoginManager()
 
+def create_app():
+    app = Flask(__name__)
+    app.secret_key = 'secret'
 
-db = SQLAlchemy(app=app)
-login = LoginManager(app=app)
-login.login_view = 'login'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:askme@localhost:3306/studentdb'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    db.init_app(app)
+    login.init_app(app)
+
+    # ✅ Đưa vào trong create_app để tránh vòng lặp
+    from StudentManagementApp.models.user import User
+
+    @login.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
+    # import routes
+    from StudentManagementApp.routes.teacher import teacher
+    app.register_blueprint(teacher)
+
+    return app

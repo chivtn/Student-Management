@@ -1,25 +1,26 @@
-from enums import Enum
+from enum import Enum
 
-class VaiTro(Enum):
-    QUAN_TRI_VIEN = "QUAN_TRI_VIEN"
-    GIAO_VIEN = "GIAO_VIEN"
-    NHAN_VIEN = "NHAN_VIEN"
+class Role(Enum):
+    ADMIN = "QUAN_TRI_VIEN"
+    TEACHER = "GIAO_VIEN"
+    STAFF = "NHAN_VIEN"
 
-class GioiTinh(Enum):
-    NAM = "NAM"
-    NU = "NU"
+class Gender(Enum):
+    MALE = "NAM"
+    FEMALE = "NU"
 
-class LoaiDiem(Enum):
-    DIEM_15_PHUT = "15P"
-    DIEM_1_TIET = "1TIET"
-    DIEM_CUOI_KY = "THI"
+class ScoreType(Enum):
+    FIFTEEN_MIN = "15P"
+    ONE_PERIOD = "1TIET"
+    FINAL = "THI"
 
-class KhoiLop(Enum):
-    LOP_10 = "10"
-    LOP_11 = "11"
-    LOP_12 = "12"
+class Grade(Enum):
+    GRADE_10 = "LOP_10"
+    GRADE_11 = "LOP_11"
+    GRADE_12 = "LOP_12"
 
-class QuanHe(Enum):
-    CHA = "CHA"
-    ME = "ME"
-    NGUOI_GIAM_HO = "NGUOI_GIAM_HO"
+class Relationship(Enum):
+    FATHER = "CHA"
+    MOTHER = "ME"
+    GUARDIAN = "NGUOI_GIAM_HO"
+

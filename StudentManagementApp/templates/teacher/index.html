@@ -1,0 +1,38 @@
+{% extends 'layout/base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <h2>Chào mừng, {{ teacher.user.username }}</h2>
+        <p class="text-muted">Môn phụ trách: <strong>{{ teacher.subject.name }}</strong></p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col">
+            <div class="card border-primary h-100 text-center">
+                <div class="card-body">
+                    <h5 class="card-title">📚 Danh sách lớp đang dạy</h5>
+                    <a href="{{ url_for('teacher.view_classes') }}" class="btn btn-outline-primary mt-2">Xem ngay</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-success h-100 text-center">
+                <div class="card-body">
+                    <h5 class="card-title">📝 Nhập điểm học sinh</h5>
+                    <a href="{{ url_for('teacher.select_for_grading') }}" class="btn btn-outline-success mt-2">Bắt đầu
+                        nhập điểm</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-warning h-100 text-center">
+                <div class="card-body">
+                    <h5 class="card-title">📊 Xuất điểm trung bình</h5>
+                    <a href="{{ url_for('teacher.view_avg_scores') }}" class="btn btn-outline-warning mt-2">Xem kết
+                        quả</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

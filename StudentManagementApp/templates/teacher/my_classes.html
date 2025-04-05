@@ -1,0 +1,30 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="card shadow">
+    <div class="card-header bg-success text-white">
+      <h5 class="mb-0">Danh sách lớp đang giảng dạy</h5>
+    </div>
+    <div class="card-body">
+      {% if classrooms %}
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+          {% for c in classrooms %}
+            <div class="col">
+              <div class="card border-primary h-100">
+                <div class="card-body">
+                  <h5 class="card-title">{{ c.name }}</h5>
+                  <p class="card-text">Khối: {{ c.gradelevel.name }}<br>Năm học: {{ c.academic_year }}</p>
+                  <a href="{{ url_for('teacher.view_class_detail', class_id=c.id) }}" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted">Bạn chưa được phân công giảng dạy lớp nào.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

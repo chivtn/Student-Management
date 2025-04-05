@@ -1,31 +1,28 @@
-<div class="mt-4 p-5 bg-primary text-white rounded text-center">
-    <span class="h1">Hệ thống quản lý học sinh trường THPT</span>
-</div>
-<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">QUẢN LÝ HỌC SINH</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="#">QUẢN LÝ HỌC SINH THPT</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+                aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="collapsibleNavbar">
-            <ul class="navbar-nav me-auto">
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="/">Trang chủ</a>
+                    <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Trang chủ</a>
                 </li>
-
                 {% if current_user.is_authenticated %}
-<!--                <li class="nav-item">-->
-<!--                    <a class="nav-link text-info" href="/">Chào {{ current_user.username }}!</a>-->
-<!--                </li>-->
                 <li class="nav-item">
-                    <a class="nav-link text-info" href="/logout">Đăng xuất</a>
+                    <a class="nav-link text-warning">Chào {{ current_user.username }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Đăng xuất</a>
                 </li>
                 {% else %}
                 <li class="nav-item">
-                    <a class="nav-link text-info" href="/login">Đăng nhập</a>
+                    <a class="nav-link" href="/login">Đăng nhập</a>
                 </li>
                 {% endif %}
-
             </ul>
         </div>
     </div>

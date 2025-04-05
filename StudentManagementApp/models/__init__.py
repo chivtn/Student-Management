@@ -1,20 +1,14 @@
-from .enums import *
-from .nguoi_dung import *
-from .giao_vien import *
-from .nhan_vien import *
-from .quan_tri_vien import *
-from .hoc_sinh import *
-from .phu_huynh import *
-from .lop_hoc import *
-from .mon_hoc import *
-from .hoc_ky import *
-from .diem import *
-from .bang_diem_mon_hoc import *
-from .bao_cao import *
-from .quy_dinh import *
-from .quan_ly_bang_diem import *
-
-
-
-
-
+# models/__init__.py
+from StudentManagementApp.models.user import User
+from StudentManagementApp.models.teacher import Teacher
+from StudentManagementApp.models.staff import Staff
+from StudentManagementApp.models.admin import Admin
+from StudentManagementApp.models.student import Student
+from StudentManagementApp.models.parent import Parent
+from StudentManagementApp.models.classroom import Classroom, GradeLevel
+from StudentManagementApp.models.subject import Subject
+from StudentManagementApp.models.semester import Semester
+from StudentManagementApp.models.score_sheet import ScoreSheet
+from StudentManagementApp.models.score_detail import ScoreDetail
+from StudentManagementApp.models.regulation import Regulation
+from StudentManagementApp.models.teacher_classroom import teacher_classroom

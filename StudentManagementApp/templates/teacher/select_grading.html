@@ -1,0 +1,96 @@
+{% extends 'layout/base.html' %}
+{% block content %}
+<div class="container py-4">
+    <form method="POST">
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Chọn lớp</label>
+                <select name="class_id" class="form-select" required>
+                    <option value="">-- Chọn lớp --</option>
+                    {% for c in classes %}
+                    <option value="{{ c.id }}" {% if selected_class and selected_class.id == c.id %}selected{% endif %}>{{ c.name }} ({{ c.academic_year }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Chọn học kỳ</label>
+                <select name="semester_id" class="form-select" required>
+                    <option value="">-- Chọn học kỳ --</option>
+                    {% for s in semesters %}
+                    <option value="{{ s.id }}" {% if selected_semester and selected_semester.id == s.id %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary">➡️ Tiếp tục</button>
+        </div>
+    </form>
+
+    {% if students %}
+    <form method="POST">
+        <input type="hidden" name="class_id" value="{{ selected_class.id }}">
+        <input type="hidden" name="semester_id" value="{{ selected_semester.id }}">
+
+        <table class="table table-bordered mt-4">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Học sinh</th>
+                    <th>15 phút</th>
+                    <th>1 tiết</th>
+                    <th>Cuối kỳ</th>
+                    <th>Trung bình</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                {% set sc = scores_map[s.id] %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ s.full_name }}</td>
+
+                    <td>
+                        <div id="score15_{{ s.id }}">
+                            {% for i in range(sc.score_15 | length) %}
+                            <input type="number" name="score_15_{{ s.id }}_{{ i+1 }}" value="{{ sc.score_15[i] }}" class="form-control mb-1 score-input" step="0.1" min="0" max="10" readonly>
+                            {% endfor %}
+                        </div>
+                        {% if sc.score_15 | length < 5 %}
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addScoreInput('{{ s.id }}', '15')">+ Thêm</button>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <div id="score1tiet_{{ s.id }}">
+                            {% for i in range(sc.score_1tiet | length) %}
+                            <input type="number" name="score_1tiet_{{ s.id }}_{{ i+1 }}" value="{{ sc.score_1tiet[i] }}" class="form-control mb-1 score-input" step="0.1" min="0" max="10" readonly>
+                            {% endfor %}
+                        </div>
+                        {% if sc.score_1tiet | length < 3 %}
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addScoreInput('{{ s.id }}', '1tiet')">+ Thêm</button>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <input type="number" name="score_final_{{ s.id }}" value="{{ sc.score_final if sc.score_final is not none else '' }}" class="form-control score-input" step="0.1" min="0" max="10" {% if sc.score_final is not none %}readonly{% endif %}>
+                    </td>
+
+                    <td>
+                        <strong id="avg_{{ s.id }}">{{ sc.avg if sc.avg else '-' }}</strong>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="text-end">
+            <button type="submit" name="draft" value="1" class="btn btn-secondary">💾 Lưu nháp</button>
+            <button type="submit" name="save_scores" value="1" class="btn btn-success">✅ Lưu chính thức</button>
+        </div>
+    </form>
+
+    <script src="{{ url_for('static', filename='js/teacher.js') }}"></script>
+    {% endif %}
+</div>
+{% endblock %}

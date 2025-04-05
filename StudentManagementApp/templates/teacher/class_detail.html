@@ -1,0 +1,30 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+  <h4>Lớp {{ classroom.name }} ({{ classroom.academic_year }})</h4>
+
+  <table class="table table-bordered mt-3">
+    <thead class="table-light">
+      <tr>
+        <th>#</th>
+        <th>Họ tên</th>
+        <th>Giới tính</th>
+        <th>Ngày sinh</th>
+        <th>Địa chỉ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ s.full_name }}</td>
+        <td>{{ s.gender.name }}</td>
+        <td>{{ s.birth_date.strftime('%d/%m/%Y') }}</td>
+        <td>{{ s.address }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
