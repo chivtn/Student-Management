@@ -44,3 +44,38 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    window.addScoreInput = function (studentId, type) {
+        const containerId = type === '15' ? `score15_${studentId}` : `score1tiet_${studentId}`;
+        const container = document.getElementById(containerId);
+
+        const timestamp = Date.now();
+        const random = Math.floor(Math.random() * 100000);
+        const uniqueKey = `score_${type}_${studentId}_${timestamp}_${random}`;
+
+        const input = document.createElement("input");
+        input.type = "number";
+        input.name = uniqueKey;
+        input.className = "form-control score-input";
+        input.step = "0.1";
+        input.min = "0";
+        input.max = "10";
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "d-flex align-items-center mb-1 gap-2";
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "btn btn-sm btn-outline-danger";
+        removeBtn.textContent = "×";
+        removeBtn.onclick = function () {
+            wrapper.remove();
+        };
+
+        wrapper.appendChild(input);
+        wrapper.appendChild(removeBtn);
+        container.appendChild(wrapper);
+    };
+});
+

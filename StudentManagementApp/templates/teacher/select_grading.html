@@ -23,7 +23,7 @@
             </div>
         </div>
         <div class="text-end">
-            <button type="submit" class="btn btn-primary">➡️ Tiếp tục</button>
+            <button type="submit" class="btn btn-primary">Tiếp tục</button>
         </div>
     </form>
 
@@ -50,10 +50,23 @@
                     <td>{{ loop.index }}</td>
                     <td>{{ s.full_name }}</td>
 
+                    <!-- CỘT 15 PHÚT -->
                     <td>
                         <div id="score15_{{ s.id }}">
-                            {% for i in range(sc.score_15 | length) %}
-                            <input type="number" name="score_15_{{ s.id }}_{{ i+1 }}" value="{{ sc.score_15[i] }}" class="form-control mb-1 score-input" step="0.1" min="0" max="10" readonly>
+                            {% for score in sc.score_15 %}
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <input
+                                    type="number"
+                                    name="score_15_{{ s.id }}_{{ loop.index }}_{{ loop.index0 }}_fixed"
+                                    value="{{ score.value }}"
+                                    class="form-control score-input"
+                                    step="0.1" min="0" max="10"
+                                    {% if score.readonly %}readonly{% endif %}
+                                >
+                                {% if not score.readonly %}
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()">×</button>
+                                {% endif %}
+                            </div>
                             {% endfor %}
                         </div>
                         {% if sc.score_15 | length < 5 %}
@@ -61,10 +74,23 @@
                         {% endif %}
                     </td>
 
+                    <!-- CỘT 1 TIẾT -->
                     <td>
                         <div id="score1tiet_{{ s.id }}">
-                            {% for i in range(sc.score_1tiet | length) %}
-                            <input type="number" name="score_1tiet_{{ s.id }}_{{ i+1 }}" value="{{ sc.score_1tiet[i] }}" class="form-control mb-1 score-input" step="0.1" min="0" max="10" readonly>
+                            {% for score in sc.score_1tiet %}
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <input
+                                    type="number"
+                                    name="score_1tiet_{{ s.id }}_{{ loop.index }}_{{ loop.index0 }}_fixed"
+                                    value="{{ score.value }}"
+                                    class="form-control score-input"
+                                    step="0.1" min="0" max="10"
+                                    {% if score.readonly %}readonly{% endif %}
+                                >
+                                {% if not score.readonly %}
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()">×</button>
+                                {% endif %}
+                            </div>
                             {% endfor %}
                         </div>
                         {% if sc.score_1tiet | length < 3 %}
@@ -72,10 +98,24 @@
                         {% endif %}
                     </td>
 
+                    <!-- CỘT CUỐI KỲ -->
                     <td>
-                        <input type="number" name="score_final_{{ s.id }}" value="{{ sc.score_final if sc.score_final is not none else '' }}" class="form-control score-input" step="0.1" min="0" max="10" {% if sc.score_final is not none %}readonly{% endif %}>
+                        {% if sc.score_final %}
+                        <input type="number"
+                               name="score_final_{{ s.id }}"
+                               value="{{ sc.score_final.value }}"
+                               class="form-control score-input"
+                               step="0.1" min="0" max="10"
+                               {% if sc.score_final.readonly %}readonly{% endif %}>
+                        {% else %}
+                        <input type="number"
+                               name="score_final_{{ s.id }}"
+                               class="form-control score-input"
+                               step="0.1" min="0" max="10">
+                        {% endif %}
                     </td>
 
+                    <!-- CỘT TRUNG BÌNH -->
                     <td>
                         <strong id="avg_{{ s.id }}">{{ sc.avg if sc.avg else '-' }}</strong>
                     </td>

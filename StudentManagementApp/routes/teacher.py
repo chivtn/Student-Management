@@ -108,34 +108,6 @@ def view_class_detail(class_id):
     students = Student.query.filter_by(classroom_id=class_id).all()
     return render_template('teacher/class_detail.html', classroom=classroom, students=students)
 
-@teacher.route('/enter_grades/<int:class_id>/<int:subject_id>/<int:semester_id>', methods=['GET', 'POST'])
-def enter_grades(class_id, subject_id, semester_id):
-    classroom = Classroom.query.get_or_404(class_id)
-    subject = Subject.query.get_or_404(subject_id)
-    semester = Semester.query.get_or_404(semester_id)
-    students = Student.query.filter_by(classroom_id=class_id).all()
-    academic_year = classroom.academic_year
-
-    if request.method == 'POST':
-        errors = score_service.save_quick_input_scores(
-            students, request.form, subject.id, semester.id, academic_year
-        )
-
-        if errors:
-            for e in errors:
-                flash(e, 'danger')
-        else:
-            db.session.commit()
-            flash("✅ Đã lưu điểm thành công!", "success")
-
-        return redirect(url_for('teacher.enter_grades', class_id=class_id, subject_id=subject_id, semester_id=semester_id))
-
-    return render_template('teacher/enter_grades.html',
-                           classroom=classroom,
-                           subject=subject,
-                           semester=semester,
-                           students=students)
-
 @teacher.route('/select_for_grading', methods=['GET', 'POST'])
 def select_for_grading():
     teacher_id = 2  # giả định hoặc dùng current_user.id khi triển khai thực tế
@@ -163,14 +135,12 @@ def select_for_grading():
                 request.form, students, academic_year, semester_id, teacher_obj.subject.id
             )
             db.session.commit()
-            message = "✅ Đã lưu điểm chính thức!"
 
         elif 'draft' in request.form:
             score_service.save_draft_scores(
                 request.form, students, academic_year, semester_id, teacher_obj.subject.id
             )
             db.session.commit()
-            message = "💾 Đã lưu nháp"
 
         scores_map = score_service.fetch_scores_for_students(students, academic_year, semester_id, subject_id)
 

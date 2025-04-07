@@ -1,7 +1,7 @@
 # models/classroom.py
 from StudentManagementApp import db
 from StudentManagementApp.models.enums import Grade
-from StudentManagementApp.models.teacher_classroom import teacher_classroom
+from StudentManagementApp.models.teacher_classroom import Teacher_Classroom
 
 class GradeLevel(db.Model):
     __tablename__ = 'gradelevel'
@@ -18,4 +18,4 @@ class Classroom(db.Model):
 
     gradelevel = db.relationship('GradeLevel', backref='classrooms')
     students = db.relationship('Student', backref='classroom')
-    teachers = db.relationship('Teacher', secondary=teacher_classroom, back_populates='classrooms')
+    teachers = db.relationship('Teacher', secondary=Teacher_Classroom, back_populates='classrooms')
