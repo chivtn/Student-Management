@@ -217,43 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function addNewClass(gradeId) {
-    fetch("/api/addClass", {
-        method: "POST",
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ grade_id: gradeId })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            // Reload trang để cập nhật danh sách lớp
-            window.location.reload();
-        } else {
-            alert(data.error || 'Lỗi khi thêm lớp');
-        }
-    })
-    .catch(error => console.error('Lỗi:', error));
-}
-
-function deleteClass(classId, element) {
-    if (confirm("Bạn có chắc chắn muốn xóa lớp này? Học sinh sẽ được chuyển vào danh sách chưa phân lớp!")) {
-        fetch(`/api/deleteClass/${classId}`, {
-            method: 'DELETE'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Xóa phần tử lớp khỏi DOM
-                element.closest('.class-item').remove();
-                // Reload lại danh sách chưa phân lớp
-                window.location.reload();
-            } else {
-                alert("Lỗi: " + data.error);
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-}
 
 // ✅ Giao diện Chuyển lớp cho học sinh
 function loadStudentsAdjust() {

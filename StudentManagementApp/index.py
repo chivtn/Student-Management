@@ -81,8 +81,6 @@ def ThemHocSinh():
                           email=email, id_grade=grade)
         db.session.add(student)
         db.session.commit()
-        # Gọi hàm tự động phân lớp sau khi thêm học sinh
-        dao.create_class_list()
         err_msg = 'Lưu thành công'
         return render_template('AddStudent.html', err_msg=err_msg)
 
@@ -188,76 +186,7 @@ def PrintClass():
 
     return stu
 
-
-@app.route('/api/addClass', methods=['POST'])
-def add_new_class():
-    data = request.get_json()
-    grade_id = data.get('grade_id')
-
-    # Lấy tên khối từ grade_id (ví dụ: 1 -> "10")
-    grade_name = {
-        1: "10",
-        2: "11",
-        3: "12"
-    }.get(grade_id, "10")
-
-    # Tìm lớp có số thứ tự cao nhất trong khối
-    # Trong route /api/addClass (index.py)
-    last_class = Class.query.filter(Class.id_grade == grade_id) \
-        .order_by(Class.id_class.desc()).first()  # Sửa thành sắp xếp theo id_class
-
-    if last_class:
-        # Tách số từ tên lớp (ví dụ: "10A10" -> 10, "A5" -> 5)
-        import re
-        match = re.search(r'A(\d+)$', last_class.name_class)
-        if match:
-            last_number = int(match.group(1))
-            new_number = last_number + 1
-        else:
-            # Xử lý trường hợp tên lớp không đúng định dạng
-            new_number = 1
-    else:
-        new_number = 1
-
-    # Tạo tên lớp mới (đảm bảo định dạng "Khối + A + số")
-    grade_name = {1: "10", 2: "11", 3: "12"}.get(grade_id, "10")
-    new_class_name = f"{grade_name}A{new_number}"
-
-    try:
-        new_class = Class(name_class=new_class_name, id_grade=grade_id)
-        db.session.add(new_class)
-        db.session.commit()
-        return jsonify({"success": True, "message": "Thêm lớp thành công"})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"success": False, "error": str(e)}), 500
-
-
-@app.route('/api/deleteClass/<int:class_id>', methods=['DELETE'])
-def delete_class(class_id):
-    try:
-        class_to_delete = Class.query.get(class_id)
-        if not class_to_delete:
-            return jsonify({"success": False, "error": "Lớp không tồn tại"}), 404
-
-        # Cập nhật học sinh trong lớp về chưa phân lớp
-        students = Student.query.filter(Student.id_class == class_id).all()
-        for student in students:
-            student.id_class = None
-            db.session.commit()
-
-        # Xóa lớp
-        db.session.delete(class_to_delete)
-        db.session.commit()
-
-        return jsonify({"success": True, "message": "Xóa lớp thành công"})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"success": False, "error": str(e)}), 500
-
-
 # ✅ Giao diện Chuyển Lớp cho học sinh
-
 # Route để hiển thị trang chuyển lớp
 @app.route('/AdjustClass', methods=['GET'])
 def AdjustClass():

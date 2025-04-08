@@ -44,10 +44,6 @@ def get_student():
     return Student.query.all()
 
 
-# def get_student_by_name(name):
-#     return Student.query.filter(Student.name.icontains(name)).all()
-
-
 def get_student_by_name(name, class_id=None):
     query = Student.query.filter(Student.name.icontains(name))
     if class_id:

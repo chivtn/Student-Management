@@ -3,95 +3,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/Staff/CreateClassList.css') }}">
 
 <div class="container-fluid mt-3">
-    <div class="row justify-content-center text-center">
-        <!-- Cột 1: Học sinh chưa phân lớp - Khối 10 -->
-        <div class="col-md-3 mb-3">
-            {% if unassigned_10 %}
-            <div class="card shadow">
-                <div class="card-header bg-warning text-white">
-                    <h5><i class="fas fa-exclamation-triangle"></i> Khối 10 - Chưa phân lớp ({{ unassigned_10|length }})</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-hover table-sm">
-                        <thead class="table-light">
-                            <tr>
-                                <th>STT</th>
-                                <th>Họ tên</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for student in unassigned_10 %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>{{ student.name }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Cột 2: Học sinh chưa phân lớp - Khối 11 -->
-        <div class="col-md-3 mb-3">
-            {% if unassigned_11 %}
-            <div class="card shadow">
-                <div class="card-header bg-warning text-white">
-                    <h5><i class="fas fa-exclamation-triangle"></i> Khối 11 - Chưa phân lớp ({{ unassigned_11|length }})</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-hover table-sm">
-                        <thead class="table-light">
-                            <tr>
-                                <th>STT</th>
-                                <th>Họ tên</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for student in unassigned_11 %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>{{ student.name }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Cột 3: Học sinh chưa phân lớp - Khối 12 -->
-        <div class="col-md-3 mb-3">
-            {% if unassigned_12 %}
-            <div class="card shadow">
-                <div class="card-header bg-warning text-white">
-                    <h5><i class="fas fa-exclamation-triangle"></i> Khối 12 - Chưa phân lớp ({{ unassigned_12|length }})</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-hover table-sm">
-                        <thead class="table-light">
-                            <tr>
-                                <th>STT</th>
-                                <th>Họ tên</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for student in unassigned_12 %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>{{ student.name }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-
     <div class="row mt-4">
         <!-- Khối 10 -->
         <div class="col-md-4">
@@ -109,9 +20,6 @@
                         </button>
                         {% endfor %}
                     </div>
-                    <button class="btn btn-sm btn-success" onclick="addNewClass(1)">
-                        <i class="fas fa-plus"></i> Thêm lớp
-                    </button>
                 </div>
             </div>
         </div>
@@ -132,9 +40,6 @@
                         </button>
                         {% endfor %}
                     </div>
-                    <button class="btn btn-sm btn-success" onclick="addNewClass(2)">
-                        <i class="fas fa-plus"></i> Thêm lớp
-                    </button>
                 </div>
             </div>
         </div>
@@ -155,9 +60,6 @@
                         </button>
                         {% endfor %}
                     </div>
-                    <button class="btn btn-sm btn-success" onclick="addNewClass(3)">
-                        <i class="fas fa-plus"></i> Thêm lớp
-                    </button>
                 </div>
             </div>
         </div>
@@ -181,7 +83,6 @@
         </tr>
     </table>
 </div>
-
 <div id="no_student"></div>
 
 {% endblock %}
