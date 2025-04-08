@@ -1,0 +1,356 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="admin-dashboard">
+    {% if current_user.is_authenticated %}
+    <div class="dashboard-header">
+        <h1 class="text-center">Trang Quản Trị Hệ Thống</h1>
+        <div class="user-greeting">
+            <span class="welcome-text">Xin chào,</span>
+            <span class="username">{{ current_user.name }}</span>
+            <span class="welcome-emoji">👋</span>
+        </div>
+    </div>
+
+    {%if err_msg%}
+    <div class="alert alert-danger alert-dismissible fade show">
+        {{err_msg}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {%endif%}
+
+    <div class="stats-container">
+        <div class="stats-row">
+            <div class="stat-card bg-primary">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ total_users }}</div>
+                    <div class="stat-label">Tổng Người Dùng</div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-success">
+                <div class="stat-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ total_subjects }}</div>
+                    <div class="stat-label">Tổng Môn Học</div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ total_classes }}</div>
+                    <div class="stat-label">Tổng Lớp Học</div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-danger">
+                <div class="stat-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ total_teachers }}</div>
+                    <div class="stat-label">Giáo Viên</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="recent-activity">
+        <div class="activity-card">
+            <h3><i class="fas fa-history me-2"></i>Hoạt động gần đây</h3>
+            <div class="activity-list">
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-user-plus text-success"></i>
+                    </div>
+                    <div class="activity-content">
+                        <span class="activity-text">Người dùng mới đã đăng ký</span>
+                        <span class="activity-time">2 giờ trước</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-book text-primary"></i>
+                    </div>
+                    <div class="activity-content">
+                        <span class="activity-text">Môn học mới đã được thêm</span>
+                        <span class="activity-time">5 giờ trước</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1><i class="fas fa-lock me-2"></i>Đăng Nhập </h1>
+                <p>Vui lòng nhập thông tin đăng nhập</p>
+            </div>
+
+            <form method="post" action="/admin/login">
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user me-2"></i>Tên đăng nhập</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Nhập tên đăng nhập">
+                </div>
+                <div class="form-group">
+                    <label for="pwd"><i class="fas fa-key me-2"></i>Mật khẩu</label>
+                    <input type="password" class="form-control" id="pwd" name="password" placeholder="Nhập mật khẩu">
+                </div>
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* Main container */
+    .admin-dashboard {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 20px;
+        color: #333;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Header section */
+    .dashboard-header {
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .dashboard-header h1 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .user-greeting {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-size: 1.2rem;
+        color: #7f8c8d;
+    }
+
+    .username {
+        font-weight: 600;
+        color: #3498db;
+    }
+
+    .welcome-emoji {
+        font-size: 1.5rem;
+    }
+
+    /* Stats cards */
+    .stats-container {
+        margin-bottom: 30px;
+    }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .stat-card {
+        border-radius: 10px;
+        padding: 20px;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    /* Activity section */
+    .recent-activity {
+        margin-top: 30px;
+    }
+
+    .activity-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .activity-card h3 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 10px;
+        border-radius: 8px;
+        transition: background-color 0.2s ease;
+    }
+
+    .activity-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .activity-icon {
+        font-size: 1.2rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #f1f1f1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-text {
+        display: block;
+        font-weight: 500;
+    }
+
+    .activity-time {
+        font-size: 0.8rem;
+        color: #7f8c8d;
+    }
+
+    /* Login page */
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 70vh;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        width: 100%;
+        max-width: 450px;
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .login-header h1 {
+        color: #2c3e50;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .login-header p {
+        color: #7f8c8d;
+        margin-top: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .form-control {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px 15px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+
+    .btn-login {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: 500;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .stats-row {
+            grid-template-columns: 1fr;
+        }
+
+        .login-card {
+            padding: 20px;
+        }
+    }
+</style>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+{% endblock %}

@@ -1,316 +1,220 @@
 /* Tổng quan giao diện */
 body {
     font-family: 'Arial', sans-serif;
+    background-color: #f4f7fa; /* Nền nhẹ nhàng */
 }
 
-/* Trang danh sách lớp */
-.pagination {
-    margin: 20px 0;
-    flex-wrap: wrap; /* Cho phép các nút xuống dòng */
+/* Container chính */
+.container-fluid {
+    padding: 0 15px;
 }
 
-.page-item .page-link {
-    color: #007bff;
-    border: 1px solid #007bff;
-    padding: 6px 12px;
-    font-size: 0.9rem;
-    transition: all 0.3s;
+/* Card */
+.card {
+    border-radius: 12px; /* Bo góc mềm hơn */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Đổ bóng sâu hơn */
+    transition: transform 0.2s ease;
+    margin-bottom: 20px; /* Tăng khoảng cách dưới */
+}
+.card:hover {
+    transform: translateY(-5px); /* Hiệu ứng nâng lên khi hover */
 }
 
-.page-item .page-link:hover {
-    background-color: #0056b3;
+/* Card header cho từng khối */
+.card-header.grade-1 { /* Khối 10 - Hot Pink */
+    background-color: rgb(255, 105, 180);
+    color: white; /* Màu trắng giống button */
+    border-bottom: 2px solid rgb(218, 44, 138);
+    transition: background-color 0.3s ease;
+    text-align: center; /* Căn giữa */
+    padding: 12px; /* Thêm padding cho thoáng */
+    border-radius: 12px 12px 0 0; /* Bo góc trên */
+}
+.card-header.grade-1:hover {
+    background-color: rgb(255, 20, 147);
+}
+.card-header.grade-1 h5 {
+    font-size: 1.8rem; /* Tăng kích thước chữ */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Đổ bóng nhẹ cho chữ */
+    margin: 0;
+}
+
+.card-header.grade-2 { /* Khối 11 - Lime Green */
+    background-color: rgb(50, 205, 50);
+    color: white; /* Màu trắng giống button */
+    border-bottom: 2px solid rgb(34, 139, 34);
+    transition: background-color 0.3s ease;
+    text-align: center; /* Căn giữa */
+    padding: 12px; /* Thêm padding cho thoáng */
+    border-radius: 12px 12px 0 0; /* Bo góc trên */
+}
+.card-header.grade-2:hover {
+    background-color: rgb(0, 128, 0);
+}
+.card-header.grade-2 h5 {
+    font-size: 1.8rem; /* Tăng kích thước chữ */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Đổ bóng nhẹ cho chữ */
+    margin: 0;
+}
+
+.card-header.grade-3 { /* Khối 12 - Medium Purple */
+    background-color: rgb(147, 112, 219);
+    color: white; /* Màu trắng giống button */
+    border-bottom: 2px solid rgb(106, 90, 205);
+    transition: background-color 0.3s ease;
+    text-align: center; /* Căn giữa */
+    padding: 12px; /* Thêm padding cho thoáng */
+    border-radius: 12px 12px 0 0; /* Bo góc trên */
+}
+.card-header.grade-3:hover {
+    background-color: rgb(123, 104, 238);
+}
+.card-header.grade-3 h5 {
+    font-size: 1.8rem; /* Tăng kích thước chữ */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Đổ bóng nhẹ cho chữ */
+    margin: 0;
+}
+
+/* Xóa định nghĩa mặc định không cần thiết */
+.card-header h5 {
+    /* Đã được định nghĩa riêng cho từng grade, không cần ở đây nữa */
+}
+
+/* Lưới các nút lớp */
+.class-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 cột */
+    gap: 12px; /* Tăng khoảng cách giữa các nút */
+    margin: 15px; /* Tăng lề trong card */
+}
+
+/* Nút lớp học */
+.class-button {
+    border-radius: 8px; /* Bo góc mềm hơn */
+    font-size: 0.95rem; /* Tăng nhẹ kích thước chữ */
+    padding: 8px 14px; /* Tăng padding cho nút rộng hơn */
+    transition: all 0.3s ease;
+    text-align: center;
+    height: 55px; /* Tăng chiều cao nút */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: normal;
+    line-height: 1.3;
+    border: none;
     color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+}
+.grade-1 .class-button { /* Khối 10 - Hot Pink */
+    background-color: rgb(255, 105, 180);
+}
+.grade-1 .class-button:hover {
+    background-color: rgb(255, 20, 147);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Đổ bóng sâu hơn khi hover */
+}
+.grade-1 .class-button.active {
+    background-color: rgb(218, 44, 138);
 }
 
-.page-item.active .page-link {
-    background-color: #28a745;
-    border-color: #28a745;
-    color: white;
+.grade-2 .class-button { /* Khối 11 - Lime Green */
+    background-color: rgb(50, 205, 50);
+}
+.grade-2 .class-button:hover {
+    background-color: rgb(0, 128, 0);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.grade-2 .class-button.active {
+    background-color: rgb(34, 139, 34);
 }
 
-/* Khung thông tin lớp */
-#name_class, #quantity {
-    font-size: 1.1rem;
+.grade-3 .class-button { /* Khối 12 - Medium Purple */
+    background-color: rgb(147, 112, 219);
+}
+.grade-3 .class-button:hover {
+    background-color: rgb(123, 104, 238);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.grade-3 .class-button.active {
+    background-color: rgb(106, 90, 205);
+}
+
+/* Danh sách lớp */
+#print_class {
+    background-color: #fff;
+    padding: 25px; /* Tăng padding cho thoáng */
+    border-radius: 12px; /* Bo góc mềm hơn */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Đổ bóng sâu hơn */
+}
+#print_class .fs-3 {
+    color: rgb(30, 144, 255); /* Dodger Blue */
     font-weight: bold;
-    color: #333;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+}
+#name_class, #quantity {
+    font-size: 1.2rem; /* Tăng kích thước chữ */
+    font-weight: 500;
+    color: rgb(0, 105, 148); /* Xanh đậm */
 }
 
 /* Bảng danh sách học sinh */
-#table_print_class th, #table_print_class td {
-    text-align: center;
-    vertical-align: middle;
+#table_print_class {
+    border-radius: 10px; /* Bo góc mềm hơn */
+    overflow: hidden;
+    font-size: 1.1rem; /* Tăng kích thước chữ cho toàn bộ bảng */
 }
-
 #table_print_class th {
-    background-color: #007bff;
+    background-color: rgb(30, 144, 255);
     color: white;
-    font-size: 1rem;
-    font-weight: bold;
+    padding: 12px; /* Tăng padding */
+    text-align: center;
+    font-size: 1.1rem; /* Tăng kích thước chữ cho tiêu đề cột */
 }
-
 #table_print_class td {
-    background-color: #f8f9fa;
+    background-color: rgb(240, 248, 255);
+    padding: 12px; /* Tăng padding */
+    text-align: center;
+    font-size: 1.1rem; /* Tăng kích thước chữ cho ô dữ liệu */
 }
-
 #table_print_class tr:hover {
-    background-color: #e2e6ea;
+    background-color: rgb(173, 216, 230);
 }
 
 /* Thông báo không có học sinh */
 #no_student {
     display: none;
-    font-size: 1.2rem;
+    font-size: 1.3rem; /* Tăng kích thước chữ */
     font-weight: bold;
-    color: #dc3545;
-    padding: 15px;
-    border-radius: 5px;
-    background-color: #f8d7da;
-    margin-top: 20px;
-}
-
-/* Cải tiến giao diện các phần tử trong trang */
-.container-fluid {
-    padding: 0 15px;
-}
-
-.row.g-3 {
-    margin: 0 -8px; /* Bù lại khoảng cách của columns */
-}
-
-/* Card */
-.card {
-    margin-bottom: 16px;
-    border-radius: 8px;
-    height: calc(100% - 16px); /* Cân bằng chiều cao thẻ */
-}
-
-/* Form tạo lớp */
-.form-control-sm, .form-select-sm {
-    font-size: 0.85rem;
-}
-
-/* Giới hạn chiều cao và thêm thanh cuộn cho bảng học sinh chưa phân lớp */
-.card-body table {
-    max-height: 400px; /* Điều chỉnh giá trị theo ý muốn */
-    overflow-y: auto;
-    display: block;
-}
-
-/* Bảng học sinh chưa phân lớp */
-.table {
-    font-size: 0.9rem;
-}
-
-.table th, .table td {
-    padding: 8px;
-}
-
-/* Thu nhỏ tiêu đề bảng */
-.card-header h5 {
-    font-size: 1rem;
-    margin-bottom: 0;
-}
-
-/* Nút lớp học */
-.class-buttons-container {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5 cột đều nhau */
-    gap: 10px; /* Khoảng cách giữa các nút */
-    margin: 1rem 0;
-}
-
-.class-button {
-    font-size: 0.8rem;
-    padding: 6px 12px;
-    transition: all 0.3s ease;
+    color: rgb(0, 105, 148);
+    padding: 20px; /* Tăng padding */
+    border-radius: 8px; /* Bo góc mềm hơn */
+    background-color: rgb(173, 216, 230);
+    border: 1px solid rgb(30, 144, 255);
+    margin-top: 25px; /* Tăng khoảng cách trên */
     text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
 }
 
-.class-button.active {
-    background-color: #28a745;
-    color: white;
-    border-color: #28a745;
+/* Icon */
+i {
+    vertical-align: middle;
+    margin-right: 6px; /* Tăng khoảng cách nhẹ */
 }
 
-.class-buttons-container h5 {
-    color: #2c3e50;
-    font-weight: bold;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #3498db;
-}
-
-.class-buttons-container .row {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Thu nhỏ kích thước bảng */
-.table-hover {
-    font-size: 0.85rem;
-}
-
-.table-hover th,
-.table-hover td {
-    padding: 6px 10px;
-}
-
-/* Pagination bên trái */
-.pagination {
-    gap: 5px; /* Tạo khoảng cách giữa các nút */
-}
-
-/* Giảm font-size và padding */
-.table-sm td,
-.table-sm th {
-    font-size: 0.875rem;
-    padding: 0.5rem;
-}
-
-/* Giảm kích thước nút lớp */
-.fixed-class-button {
-    width: 120px;
-    height: 120px;
-    font-size: 14px;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-/* Grid container cho các nút lớp */
-.class-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5 cột */
-    gap: 8px; /* Khoảng cách giữa các nút */
-    margin-bottom: 1rem;
-}
-
-/* Điều chỉnh kích thước nút */
-.class-button {
-    width: 100%;
-    height: 50px;
-    font-size: 12px;
-    padding: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    white-space: normal; /* Cho phép xuống dòng */
-    line-height: 1.2;
-}
-
-/* Responsive cho màn hình nhỏ */
-@media (max-width: 768px) {
-    .class-grid {
-        grid-template-columns: repeat(3, 1fr); /* 3 cột trên mobile */
-    }
-}
-/* Điều chỉnh lưới hiển thị 4 lớp/hàng */
-.class-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Thay đổi từ 5 -> 4 */
-    gap: 8px;
-    margin-bottom: 1rem;
-}
-
-/* Container cho 2 form */
-.form-actions {
-    display: flex;
-    justify-content: space-between; /* Form trái-phải */
-    align-items: center;
-    gap: 10px;
-}
-
-/* Form tạo lớp */
-.create-form {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-grow: 1; /* Chiếm không gian còn lại */
-}
-
-.create-form input[type="text"] {
-    width: 120px; /* Cố định độ rộng ô input */
-    flex-shrink: 0;
-}
-
-/* Nút xóa */
-.delete-form {
-    flex-shrink: 0; /* Không co lại */
-}
-
-/* Responsive cho mobile */
+/* Responsive */
 @media (max-width: 768px) {
     .class-grid {
         grid-template-columns: repeat(2, 1fr); /* 2 cột trên mobile */
     }
-
-    .form-actions {
-        flex-direction: column; /* Xếp dọc trên mobile */
+    .class-button {
+        font-size: 0.9rem; /* Tăng nhẹ kích thước chữ */
+        padding: 6px 10px;
+        height: 50px; /* Giảm chiều cao về mức hợp lý */
     }
-}
-/* Lưới cho các nút lớp */
-.class-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5 cột */
-    gap: 10px;
-    margin-top: 10px;
-}
-
-/* Nút lớp học */
-.class-button {
-    font-size: 0.8rem;
-    padding: 6px 12px;
-    transition: all 0.3s ease;
-    text-align: center;
-}
-
-.class-button.active {
-    background-color: #28a745;
-    color: white;
-    border-color: #28a745;
-}
-.class-item {
-    position: relative;
-    display: inline-block;
-    margin: 2px;
-}
-
-.delete-class {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    padding: 2px 5px;
-    border-radius: 50%;
-    font-size: 12px;
-}
-/* Nút xóa lớp */
-.class-item {
-    position: relative;
-    display: inline-block;
-    margin: 2px;
-}
-
-.delete-class {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    padding: 2px 5px;
-    border-radius: 50%;
-    font-size: 12px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.class-item:hover .delete-class {
-    opacity: 1;
+    #table_print_class th, #table_print_class td {
+        padding: 8px; /* Giảm padding cho mobile */
+        font-size: 0.9rem; /* Tăng nhẹ kích thước chữ */
+    }
+    .card-header.grade-1 h5, .card-header.grade-2 h5, .card-header.grade-3 h5 {
+        font-size: 1.5rem; /* Giảm kích thước chữ trên mobile */
+    }
 }

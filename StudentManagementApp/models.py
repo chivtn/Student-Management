@@ -12,6 +12,7 @@ class UserRoleEnum(enum.Enum):
     STAFF = 2
     TEACHER = 3
 
+# Phần enum này theo bài mẫu lý up lên git
 class Sex(enum.Enum):
     MALE= "NAM"
     FEMALE = "NU"
@@ -20,6 +21,7 @@ class Grade_Enum(enum.Enum):
     GRADE_10 = "10"
     GRADE_11 = "11"
     GRADE_12 = "12"
+
 
 class Relationship(enum.Enum):
     DAD = "CHA"
@@ -34,7 +36,7 @@ class User(db.Model, UserMixin):
     user_role = Column(Enum(UserRoleEnum), nullable=False)
 
     def __str__(self):
-        return self.hoTen
+        return self.name
 
     def get_id(self):
         return str(self.id)
@@ -65,17 +67,6 @@ class Class(db.Model):
     # Mỗi Lớp Học có nhiều Học sinh
     students = relationship('Student', backref='Class', lazy=True)
 
-    # # Mỗi Lớp Học có nhiều dạy Giáo viên
-    # giaoViens = relationship('GiaoVien', backref='LopHoc', lazy=True)
-    #
-    # # Mỗi Lớp Học có 1 giáo viên chủ nhiệm
-    # idGiaoVien = Column(Integer, ForeignKey('GiaoVien.idGV'), nullable=False)
-    #
-    # # Mỗi Lớp Học có nhiều Nhân Viên quản lý
-    # nhanViens = relationship('Staff', backref='LopHoc', lazy=True)
-    #
-    # # Mỗi Lớp Học có nhiều Bảng điểm môn học
-    # bangDiems = relationship('BangDiemMonHoc', backref='LopHoc', lazy=True)
 
 # Học Sinh
 class Student(db.Model):
@@ -92,15 +83,14 @@ class Student(db.Model):
     id_class = Column(Integer, ForeignKey(Class.id_class), nullable=True)
     # Mỗi Học Sinh thuộc về 1 khối
     id_grade = Column(Integer, ForeignKey(Grade.id_grade), nullable=False)
-    # # Mỗi học sinh có nhiều phụ huynh
-    # phuHuynhs = relationship('PhuHuynh', secondary='HocSinh_PhuHuynh', back_populates='hocSinhs')
-
+    tests = relationship('Test', backref='Student', lazy=True)
 
 # Học Kỳ
 class Semester(db.Model):
     __tablename__ = 'Semester'
     id_semester = Column(Integer, primary_key=True, autoincrement=True)
     name_semester = Column(String(50), nullable=False)
+    tests = relationship('Test', backref='Semester', lazy=True)
 
 # Môn Học
 class Subject(db.Model):
@@ -109,6 +99,28 @@ class Subject(db.Model):
     name_subject = Column(String(100), nullable=False)
     score15P_column_number = Column(Integer, nullable=True)
     score1T_column_number = Column(Integer, nullable=True)
+    tests = relationship('Test', backref='Subject', lazy=True)
+    teachers = relationship('Teacher', backref='Subject', lazy=True)
+
+
+class Teacher(db.Model):
+    __tablename__ = 'Teacher'
+    id_teacher = Column(Integer, primary_key=True, autoincrement=True)
+    name_teacher = Column(String(100), nullable=False)
+    start_date = Column(DateTime, nullable= True)
+    id_user = Column(Integer, ForeignKey(User.id), nullable= True)
+    id_subject = Column(Integer, ForeignKey(Subject.id_subject), nullable= False)
+
+
+class Test(db.Model):
+    __tablename__ = 'Test'
+    id_test = Column(Integer, primary_key=True, autoincrement=True)
+    type = Column(Enum('15 phút', '1 tiết', 'Cuối kỳ'), nullable=False)
+    score = Column(Float, nullable=False)
+    id_student = Column(Integer, ForeignKey(Student.id), nullable=False)
+    id_subject = Column(Integer, ForeignKey(Subject.id_subject), nullable=False)
+    id_semester = Column(Integer, ForeignKey(Semester.id_semester), nullable=False)
+
 
 # Phụ Huynh
 class Parents(db.Model):
@@ -120,13 +132,25 @@ class Parents(db.Model):
     # Mỗi phụ huynh có nhiều học sinh (con của phụ huynh)
 
 
+class_teacher = db.Table('class_teacher',
+                            Column('id_class', Integer, ForeignKey(Student.id), primary_key=True),
+                            Column('id_teacher', Integer, ForeignKey(Teacher.id_teacher), primary_key=True))
+
+student_subject = db.Table('student_subject',
+                           Column('id_student', Integer, ForeignKey(Student.id), primary_key=True),
+                         Column('id_subject', Integer, ForeignKey(Subject.id_subject), primary_key=True))
+
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
 
-        u1 = User(name='Staff', username='staff',
+        u1 = User(name='Admin', username='admin',
+                  password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()), user_role=UserRoleEnum.ADMIN)
+
+        u2 = User(name='Staff', username='staff',
                   password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()), user_role=UserRoleEnum.STAFF)
-        db.session.add_all([u1])
+        db.session.add_all([u1, u2])
         db.session.commit()
 
         grade1 = Grade(name_grade= Grade_Enum.GRADE_10)

@@ -13,6 +13,16 @@ from datetime import datetime
 def index():
     return render_template('layout/base.html')
 
+@app.route('/admin/login', methods=['post'])
+def login_admin():
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    admin = dao.auth_admin(username=username, password=password)
+    if admin:
+        login_user(admin)
+
+    return redirect('/admin')
 
 @app.route('/login', methods=['get', 'post'])
 def login_view():
@@ -42,6 +52,7 @@ def load_user(user_id):
     return dao.get_user_by_id(user_id)
 
 
+# ✅ Phần Chi
 # ✅ Giao diện Thêm Học Sinh
 @app.route("/AddStudent")
 def AddStudent():
@@ -83,7 +94,6 @@ def ThemHocSinh():
         db.session.commit()
         err_msg = 'Lưu thành công'
         return render_template('AddStudent.html', err_msg=err_msg)
-
 
 
 @app.route("/api/searchStudentAddStu", methods=['POST'])
@@ -146,8 +156,6 @@ def delete_student(student_id):
 
 
 # ✅ Giao diện Lập Danh Sách Lớp
-
-
 @app.route("/CreateClassList")
 def CreateClassList():
     result = dao.create_class_list()
@@ -213,7 +221,7 @@ def change_class():
     old_class = Class.query.get(old_class_id) if old_class_id else None
 
     # Kiểm tra lớp mới có đầy không (giả sử mỗi lớp tối đa 40 học sinh)
-    if new_class.current_student >= 40:  # Nơi cần sửa
+    if new_class.current_student >= app.config['soluong']:  # Nơi cần sửa
         return jsonify({"success": False, "message": "Lớp đã đầy"}), 400
 
     # Kiểm tra học sinh có cùng khối với lớp mới không
@@ -237,7 +245,7 @@ def change_class():
             },
             "new_class": {
                 "id": new_class.id_class,
-                "current_student": new_class.current_student + 1
+                "current_student": new_class.current_student
             }
         })
     except Exception as e:
@@ -276,6 +284,76 @@ def search_student():
             "class": student.Class.name_class if student.Class else "Chưa có lớp"
         }
     return jsonify(result)
+
+# ✅ Phần Giang
+@app.route("/api/statisticsScore", methods=['POST'])
+def StatisticsScore():
+    id_subject = request.json.get('id_subject')
+    id_semester = request.json.get('id_semester')
+    classes = dao.get_class()
+    semester = 0
+    schoolyear = ''
+    if int(id_semester) % 2 == 0:
+        semester = 2
+    else:
+        semester = 1
+    if id_semester == '1':
+        schoolyear = 'Năm học 2020-2021'
+    elif id_semester == '3':
+        schoolyear = 'Năm học 2021-2022'
+    elif id_semester == '5':
+        schoolyear = 'Năm học 2022-2023'
+    elif id_semester == '7':
+        schoolyear = 'Năm học 2023-2024'
+    stu = {}
+    stu[0] = {
+        'subject': dao.get_subject_by_id(id_subject).name_subject,
+        'semester': semester,
+        'schoolyear': schoolyear,
+        'quantity': len(classes)
+    }
+    for i in range(len(classes)):
+        statistics = dao.statistics_subject(id_class=classes[i].id_class, id_subject=id_subject, id_semester=id_semester)
+        count = 0
+        for j in range(len(statistics)):
+            if statistics[j]['score'] >= 5:
+                count = count + 1
+        rate = 0
+        if len(statistics) == 0:
+            rate = 0
+        else:
+            rate = round(float(count / len(statistics) * 100), 1)
+        stu[i+1]= {
+            'class': classes[i].name_class,
+            'quantity_student': len(statistics),
+            'quantity_passed': count,
+            'rate': rate
+        }
+    return stu
+
+
+@app.route("/api/changeRule", methods=['POST'])
+def ChangeRule():
+    quantity = int(request.json.get('quantity'))
+    min_age = int(request.json.get('min_age'))
+    max_age = int(request.json.get('max_age'))
+
+    if quantity <= 0 or min_age <= 0 or max_age <= 0:
+        return jsonify({'status': 200, 'content': 'Thông tin không hợp lệ. Vui lòng kiểm tra lại!'})
+    if min_age >= max_age:
+        return jsonify({'status': 200, 'content': 'Tuổi lớn nhất phải lớn hơn tuổi nhỏ nhất. Vui lòng kiểm tra lại!'})
+    classes = dao.get_class()
+    max = 0
+    for c in classes:
+        student = dao.get_student_by_class(c.id_class)
+        if max < len(student):
+            max = len(student)
+    if quantity < max:
+        return jsonify({'status': 200, 'content': str.format('Sĩ số tối đa phải lớn hơn {0}. Vui lòng kiểm tra lại!', max)})
+    app.config['soluong'] = quantity
+    app.config['mintuoi'] = min_age
+    app.config['maxtuoi'] = max_age
+    return jsonify({'status': 500, 'content': 'Thành công!'})
 
 if __name__ == '__main__':
     app.run(debug=True)

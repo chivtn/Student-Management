@@ -6,28 +6,26 @@ import hashlib
 from sqlalchemy import func
 from flask import jsonify
 
+
+# Phần Chi
 def get_user_by_id(user_id):
     return User.query.get(user_id)
 
-# Done
+#
 def auth_staff(username, password):
     password = str(hashlib.md5(password.encode('utf-8')).hexdigest())
     return User.query.filter(User.username.__eq__(username),
                              User.password.__eq__(password), User.user_role.__eq__(UserRoleEnum.STAFF)).first()
 
-
 # Yêu Cầu 2
 def get_class():
     return Class.query.all()
 
-
 def get_class_by_id_grade(id_grade):
     return Class.query.filter(Class.id_grade.__eq__(id_grade)).all()
 
-
 def get_class_by_id(id_class):
     return Class.query.filter(Class.id_class.__eq__(id_class)).first()
-
 
 def get_class_is_blank(id_grade):
     # Lấy tất cả lớp thuộc khối
@@ -35,20 +33,30 @@ def get_class_is_blank(id_grade):
     # Lọc lớp chưa đầy
     return [c for c in classes if c.current_student < app.config['soluong']]
 
+# Hàm này Giang dùm kh, này quan trọng bên t
+# def get_class_is_blank():
+#     classes = Class.query.all()
+#     classes_blank = []
+#     for c in classes:
+#         if len(c.students) < app.config['soluong']:
+#             classes_blank.append(c)
+#     return classes_blank
 
 def get_student_by_class(id_class):
     return Student.query.filter(Student.id_class.__eq__(id_class)).all()
 
-
 def get_student():
     return Student.query.all()
-
 
 def get_student_by_name(name, class_id=None):
     query = Student.query.filter(Student.name.icontains(name))
     if class_id:
         query = query.filter(Student.id_class == class_id)
     return query.all()
+
+# Hàm này Giang dùm kh, này quan trọng bên t
+# def get_student_by_name(name):
+#     return Student.query.filter(Student.name.icontains(name)).all()
 
 
 def get_student_by_id(id):
@@ -137,6 +145,58 @@ def create_class_list():
         "classes": get_class(),
         "unassigned_students": unassigned_students
     }
+
+
+# Phần Giang
+def statistics_subject(id_class, id_subject, id_semester):
+    student = get_student_by_class(id_class)
+    scores = {}
+
+    for i in range(len(student)):
+        scores[i] = {
+            'id_student': student[i].id,
+            'score': 0,
+        }
+    test_15m = db.session.query(Test.id_student, func.sum(Test.score), func.count(Test.score)) \
+        .join(Student, Student.id == Test.id_student) \
+        .filter(Test.id_semester == id_semester, Test.id_subject == id_subject,
+                Student.id_class == id_class, Test.type == '15 phút') \
+        .group_by(Test.id_student).all()
+
+    test_45m = db.session.query(Test.id_student, func.sum(Test.score), func.count(Test.score)) \
+        .join(Student, Student.id == Test.id_student) \
+        .filter(Test.id_semester == id_semester, Test.id_subject == id_subject,
+                Student.id_class == id_class, Test.type == '1 tiết') \
+        .group_by(Test.id_student).all()
+
+    test_final = db.session.query(Test.id_student, func.sum(Test.score), func.count(Test.score)) \
+        .join(Student, Student.id == Test.id_student) \
+        .filter(Test.id_semester == id_semester, Test.id_subject == id_subject,
+                Student.id_class == id_class, Test.type == 'Cuối kỳ') \
+        .group_by(Test.id_student).all()
+    if test_15m and test_45m and test_final:
+        for i in range(len(test_15m)):
+            a = float(test_15m[i][1])
+            b = float(test_45m[i][1])
+            c = float(test_final[i][1])
+            x = int(test_15m[i][2])
+            y = int(test_45m[i][2])
+            z = int(test_final[i][2])
+            scores[i]['score'] = round((a + b * 2 + c * 3) / (x + y * 2 + z * 3), 1)
+    return scores
+
+def count_users():
+    return User.query.count()
+
+# Thêm hàm đếm số lượng môn học
+def count_subjects():
+    return Subject.query.count()
+
+def auth_admin(username, password):
+    password = str(hashlib.md5(password.encode('utf-8')).hexdigest())
+    return User.query.filter(User.username.__eq__(username),
+                             User.password.__eq__(password), User.user_role.__eq__(UserRoleEnum.ADMIN)).first()
+
 
 if __name__ == '__main__':
     with app.app_context():
