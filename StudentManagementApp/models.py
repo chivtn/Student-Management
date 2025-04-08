@@ -131,6 +131,12 @@ class Parents(db.Model):
 
     # Mỗi phụ huynh có nhiều học sinh (con của phụ huynh)
 
+class Regulation(db.Model):
+    __tablename__ = 'Regulation'
+    id_regulations = Column(Integer, primary_key=True, autoincrement=True)
+    name_regulations= Column(String(50), nullable=False)
+    value_regulations= Column(Integer, nullable=False)
+
 
 class_teacher = db.Table('class_teacher',
                             Column('id_class', Integer, ForeignKey(Student.id), primary_key=True),
@@ -221,4 +227,10 @@ if __name__ == '__main__':
         s7 = Semester(name_semester="Học kỳ 1 năm học 2023-2024")
         s8 = Semester(name_semester="Học kỳ 2 năm học 2023-2024")
         db.session.add_all([s1, s2, s3, s4, s5, s6, s7, s8])
+        db.session.commit()
+
+        r1 = Regulation(name_regulations="Quy định số lượng học sinh trong 1 lớp", value_regulations=40)
+        r2 = Regulation(name_regulations="Quy định số tuổi nhỏ nhất của học sinh", value_regulations=15)
+        r3 = Regulation(name_regulations="Quy định số tuổi lớn nhất của học sinh", value_regulations=20)
+        db.session.add_all([r1,r2,r3])
         db.session.commit()
