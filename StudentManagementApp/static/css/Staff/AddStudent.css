@@ -1,0 +1,18 @@
+/* Trong file AddStudent.css */
+.table-responsive {
+    max-height: 600px; /* Giới hạn chiều cao */
+    overflow-y: auto; /* Cuộn dọc nếu cần */
+}
+
+.table th, .table td {
+    white-space: nowrap; /* Ngăn ngắt dòng */
+    overflow: hidden; /* Ẩn nội dung tràn */
+    text-overflow: ellipsis; /* Hiển thị dấu ... khi tràn */
+    max-width: 200px; /* Đặt chiều rộng tối đa cho các cột */
+}
+
+/* Hoặc xác định chiều rộng cụ thể cho từng cột */
+th:nth-child(1), td:nth-child(1) { width: 5%; } /* STT */
+th:nth-child(2), td:nth-child(2) { width: 20%; } /* Họ tên */
+th:nth-child(3), td:nth-child(3) { width: 10%; } /* Giới tính */
+/* ... Tùy chỉnh các cột còn lại */

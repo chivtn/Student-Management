@@ -1,0 +1,118 @@
+{% extends 'staff.html' %}
+
+{% block staff %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Staff/AdjustClass.css') }}">
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <!-- Phần Tìm kiếm học sinh -->
+        <div class="col-md-5 mb-4">
+            <h4 class="text-center mb-4">Tìm kiếm học sinh</h4>
+            <!-- Thêm dropdown chọn khối và lớp -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <select class="form-select" id="filterGrade" onchange="loadClassesByGrade(this.value)">
+                        <option value="">Chọn khối</option>
+                        {% for grade in grades %}
+                        <option value="{{ grade.id_grade }}">Khối {{ grade.name_grade.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <select class="form-select" id="filterClass">
+                        <option value="">Chọn lớp</option>
+                        <!-- Các lớp sẽ được load động bằng JavaScript -->
+                    </select>
+                </div>
+            </div>
+            <div class="input-group shadow-sm mb-4">
+                <input type="text" class="form-control" id="searchstudent" placeholder="Nhập tên hoặc ID học sinh..."
+                       aria-label="Search student">
+                <button class="btn btn-primary" onclick="searchStudent()">
+                    <i class="bi bi-search"></i> Tìm kiếm
+                </button>
+            </div>
+
+
+            <div class="student-list-container">
+                <h6 class="text-center mb-3">Danh sách học sinh</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover" id="studentList">
+                        <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Họ tên</th>
+                            <th>Lớp hiện tại</th>
+                            <th>Chọn</th> <!-- Cột chọn học sinh -->
+                        </tr>
+                        </thead>
+                        <tbody id="result_searchstudent">
+                        {% raw %}
+                        <script type="text/template" id="studentRowTemplate">
+                            <tr>
+                                <td>{{id}}</td>
+                                <td>{{name}}</td>
+                                <td>{{class}}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary"
+                                            onclick="selectStudent('{{id}}', '{{name}}', '{{class}}')">
+                                        Chọn
+                                    </button>
+                                </td>
+                            </tr>
+                        </script>
+                        {% endraw %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="no_result_searchstudent" class="text-center mt-3"></div>
+        </div>
+
+        <!-- Phần Chuyển lớp học sinh -->
+        <div class="col-md-5 mb-4">
+            <h4 class="text-center mb-4">Chuyển lớp học sinh</h4>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <!-- Hiển thị học sinh được chọn -->
+                    <div id="selectedStudent" class="mb-3 text-center">
+                        <p id="studentName">Chưa chọn học sinh</p>
+                    </div>
+                    <!-- Lựa chọn lớp mới -->
+                    <!-- Lựa chọn lớp mới theo khối -->
+                    <div class="mb-3">
+                        <label class="form-label">Chọn lớp mới</label>
+
+                        {% for grade in grades %}
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Khối {{ grade.name_grade.value }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="class-grid">
+                                    {% for c in classes if c.id_grade == grade.id_grade %}
+                                    <button type="button"
+                                            class="btn btn-outline-primary class-option {% if c.current_student >= 40 %}disabled{% endif %}"
+                                            data-class-id="{{ c.id_class }}"
+                                            onclick="selectNewClass('{{ c.id_class }}', this)">
+                                        {{ c.name_class }} ({{ c.current_student }}/40)
+                                    </button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Nút chuyển lớp -->
+                    <button class="btn btn-success w-100" id="btnChangeClass" onclick="changeClass()" disabled>
+                        <i class="bi bi-arrow-repeat"></i> Chuyển lớp
+                    </button>
+                </div>
+            </div>
+            <div id="changeClassResult" class="text-center mt-4"></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

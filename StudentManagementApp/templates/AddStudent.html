@@ -1,0 +1,143 @@
+{% extends 'staff.html' %}
+
+{% block staff %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Staff/AddStudent.css') }}">
+
+<div class="main-container">
+    <div class="row g-3">
+        <!-- Cột trái - Form (4/12 cột) -->
+        <div class="col-md-4"> <!-- Thay flex-fill bằng col-md-4 -->
+            <div class="card shadow-sm h-100"> <!-- Thêm h-100 -->
+                <div class="card-body">
+                    <form method="post" action="/ThemHocSinh">
+                        <h3 class="card-title text-center mb-4">HỒ SƠ HỌC SINH</h3>
+                        {% if err_msg == "Lưu thành công" %}
+                        <div class="alert alert-success">{{ err_msg }}</div>
+                        {% elif err_msg %}
+                        <div class="alert alert-danger">{{ err_msg }}</div>
+                        {% endif %}
+
+                        <!-- Hàng 1: Họ tên và Giới tính -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Họ tên*</label>
+                                <input type="text" class="form-control form-control-sm" id="fullname" name="fullname"
+                                       required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Giới tính*</label>
+                                <select id="sex" name="sex" class="form-control form-control-sm">
+                                    <option value="" selected disabled>---</option>
+                                    <option value="1">Nam</option>
+                                    <option value="2">Nữ</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Hàng 2: Ngày sinh và Địa chỉ -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày sinh*</label>
+                                <input type="date" class="form-control form-control-sm" id="DoB" name="DoB" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Địa chỉ</label>
+                                <input type="text" class="form-control form-control-sm" id="address" name="address">
+                            </div>
+                        </div>
+
+                        <!-- Hàng 3: Email và Số điện thoại -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Email*</label>
+                                <input type="email" class="form-control form-control-sm" id="email"
+                                       placeholder="abc@gmail.com" name="email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại</label>
+                                <input type="tel" class="form-control form-control-sm" id="phonenumber"
+                                       placeholder="0123456789" name="phonenumber">
+                            </div>
+                        </div>
+
+                        <!-- Hàng 4: Khối -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Khối*</label>
+                                <select id="grade" name="grade" class="form-control form-control-sm" required>
+                                    <option value="" selected disabled>---</option>
+                                    <option value="1">Khối 10</option>
+                                    <option value="2">Khối 11</option>
+                                    <option value="3">Khối 12</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Nút hành động -->
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-danger" onclick="clearForm()">Xóa</button>
+                            <button type="submit" class="btn btn-primary">Lưu</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột phải - Danh sách  -->
+        <div class="col-md-8">
+            <div class="card shadow-sm h-100">
+                <div class="list-container flex-fill" id="listSection">
+                    <!-- Thêm dropdown chọn khối ở đây -->
+                    <div class="mb-3">
+                        <select class="form-select form-select-sm" id="filterGradeAdd" onchange="loadStudentsByGrade()">
+                            <option value="">Tất cả khối</option>
+                            <option value="1">Khối 10</option>
+                            <option value="2">Khối 11</option>
+                            <option value="3">Khối 12</option>
+                        </select>
+                    </div>
+
+                    <div class="card shadow-sm grade-card">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Danh Sách Học Sinh</h5>
+                            <div class="search-container d-flex gap-2">
+                                <!-- Dropdown chọn khối -->
+                                <input type="text" class="form-control form-control-sm" id="searchInput"
+                                       placeholder="Tìm theo tên..." onkeyup="searchStudentAddStu()">
+                                <button class="btn btn-light btn-sm" onclick="searchStudentAddStu()">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0" style="table-layout: fixed;">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Họ tên</th>
+                                        <th>Giới tính</th>
+                                        <th>Ngày sinh</th>
+                                        <th>Địa chỉ</th>
+                                        <th>Email</th>
+                                        <th>Số điện thoại</th>
+                                        <th>Khối</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="list-student"></tbody> <!-- Danh sách gốc -->
+                                    <tbody id="search-results" style="display: none;"></tbody> <!-- Kết quả tìm kiếm -->
+                                </table>
+                            </div>
+                            <!-- Thêm phần thông báo không có kết quả -->
+                            <div id="no-results" class="text-center py-3" style="display: none;">
+                                Không tìm thấy học sinh
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 <div class="mt-4 p-5 bg-primary text-white rounded text-center">
-    <span class="h1">Hệ thống quản lý học sinh trường THPT</span>
+    <span class="h1">Hệ thống quản lý học sinh trường THPT Nguyễn Thượng Hiền</span>
 </div>
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
     <div class="container-fluid">
@@ -14,9 +14,9 @@
                 </li>
 
                 {% if current_user.is_authenticated %}
-<!--                <li class="nav-item">-->
-<!--                    <a class="nav-link text-info" href="/">Chào {{ current_user.username }}!</a>-->
-<!--                </li>-->
+                <li class="nav-item">
+                    <a class="nav-link text-info" href="/">Chào {{ current_user.username }}!</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link text-info" href="/logout">Đăng xuất</a>
                 </li>
