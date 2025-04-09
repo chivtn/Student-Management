@@ -6,6 +6,7 @@ from flask_login import login_user, current_user, logout_user
 from StudentManagementApp import admin
 import string
 from datetime import datetime
+from StudentManagementApp.utils import update_regulation
 
 
 # ✅ Giao diện Đăng Nhập
@@ -358,19 +359,24 @@ def ChangeRule():
 
     if quantity <= 0 or min_age <= 0 or max_age <= 0:
         return jsonify({'status': 200, 'content': 'Thông tin không hợp lệ. Vui lòng kiểm tra lại!'})
+
     if min_age >= max_age:
         return jsonify({'status': 200, 'content': 'Tuổi lớn nhất phải lớn hơn tuổi nhỏ nhất. Vui lòng kiểm tra lại!'})
+
     classes = dao.get_class()
-    max = 0
-    for c in classes:
-        student = dao.get_student_by_class(c.id_class)
-        if max < len(student):
-            max = len(student)
-    if quantity < max:
-        return jsonify({'status': 200, 'content': str.format('Sĩ số tối đa phải lớn hơn {0}. Vui lòng kiểm tra lại!', max)})
-    app.config['soluong'] = quantity
-    app.config['mintuoi'] = min_age
-    app.config['maxtuoi'] = max_age
+    max_student = max(len(dao.get_student_by_class(c.id_class)) for c in classes)
+
+    if quantity < max_student:
+        return jsonify({
+            'status': 200,
+            'content': f'Sĩ số tối đa phải lớn hơn {max_student}. Vui lòng kiểm tra lại!'
+        })
+
+    # ✅ Cập nhật xuống DB
+    update_regulation("Quy định số lượng học sinh trong 1 lớp", quantity)
+    update_regulation("Quy định số tuổi nhỏ nhất của học sinh", min_age)
+    update_regulation("Quy định số tuổi lớn nhất của học sinh", max_age)
+
     return jsonify({'status': 500, 'content': 'Thành công!'})
 
 if __name__ == '__main__':

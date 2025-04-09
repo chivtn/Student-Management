@@ -4,90 +4,76 @@ id_class = 0
 let selectedStudent = null
 
 // ✅ Giao diện Thêm học sinh
-function searchStudentAddStu() {
+// ✅ Xử lý tìm kiếm
+function handleSearch() {
     const searchTerm = document.getElementById('searchInput').value;
-    const gradeId = document.getElementById('filterGradeAdd').value; // Lấy giá trị khối
+    const gradeId = document.getElementById('filterGradeAdd').value;
 
+    // Gọi API tìm kiếm
     fetch("/api/searchStudentAddStu", {
         method: "POST",
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             searchstudentAddStu: searchTerm,
-            grade_id: gradeId // Thêm grade_id vào request body
+            grade_id: gradeId
         })
     })
     .then(res => res.json())
-    .then(data => {
-        const originalList = document.getElementById('list-student');
-        const resultList = document.getElementById('search-results');
-        const noResultsDiv = document.getElementById('no-results');
-
-        // Ẩn danh sách gốc
-        originalList.style.display = 'none';
-
-        // Xóa kết quả cũ
-        resultList.innerHTML = '';
-
-        if (data[0].quantity === 0) {
-            noResultsDiv.style.display = 'block';
-            resultList.style.display = 'none';
-        } else {
-            noResultsDiv.style.display = 'none';
-            resultList.style.display = 'table-row-group';
-
-            // Thêm kết quả mới
-            for (let i = 1; i <= data[0].quantity; i++) {
-                const student = data[i];
-                resultList.innerHTML += `
-                    <tr>
-                        <td>${i}</td>
-                        <td>${student.name}</td>
-                        <td>${student.sex}</td>
-                        <td>${student.DoB}</td>
-                        <td>${student.address}</td>
-                        <td>${student.email}</td>
-                        <td>${student.phonenumber}</td>
-                        <td>${student.grade}</td>
-                        <td>
-                            <button class="btn btn-sm btn-danger"
-                                    onclick="deleteStudent(${student.id})">
-                                Xóa
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }
-        }
-    })
-    .catch(error => console.error('Lỗi:', error));
+    .then(data => renderResults(data));
 }
 
-function loadStudents() {
-    fetch("/api/getStudents")
-        .then(res => res.json())
-        .then(data => {
-            const tbody = document.getElementById('list-student');
-            tbody.innerHTML = ''; // Xóa dữ liệu cũ
+// ✅ Hiển thị toàn bộ danh sách
+function showAllStudents() {
+    const gradeId = document.getElementById('filterGradeAdd').value;
 
-            data.forEach((student, index) => {
-                const row = `
-                    <tr data-student-id="${student.id}">
-                        <td>${index + 1}</td>
-                        <td class="editable" data-field="name">${student.name}</td>
-                        <td class="editable" data-field="sex">${student.sex}</td>
-                        <td class="editable" data-field="DoB">${student.DoB}</td>
-                        <td class="editable" data-field="address">${student.address}</td>
-                        <td class="editable" data-field="email">${student.email}</td>
-                        <td class="editable" data-field="phonenumber">${student.phonenumber}</td>
-                        <td class="editable" data-field="grade">${student.grade}</td>
-                        <td>
-                            <button class="btn btn-sm btn-danger" onclick="deleteStudent(${student.id})">Xóa</button>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
-            });
-        });
+    // Gọi API không có điều kiện tìm kiếm
+    fetch("/api/searchStudentAddStu", {
+        method: "POST",
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            searchstudentAddStu: "",
+            grade_id: gradeId
+        })
+    })
+    .then(res => res.json())
+    .then(data => renderResults(data));
+}
+
+// ✅ Hiển thị kết quả chung
+function renderResults(data) {
+    const resultList = document.getElementById('search-results');
+    const noResultsDiv = document.getElementById('no-results');
+
+    resultList.innerHTML = '';
+    resultList.style.display = 'table-row-group';
+    noResultsDiv.style.display = 'none';
+
+    if (data[0].quantity === 0) {
+        noResultsDiv.style.display = 'block';
+        resultList.style.display = 'none';
+    } else {
+        for (let i = 1; i <= data[0].quantity; i++) {
+            const student = data[i];
+            resultList.innerHTML += `
+                <tr>
+                    <td>${i}</td>
+                    <td>${student.name}</td>
+                    <td>${student.sex}</td>
+                    <td>${student.DoB}</td>
+                    <td>${student.address}</td>
+                    <td>${student.email}</td>
+                    <td>${student.phonenumber}</td>
+                    <td>${student.grade}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger"
+                                onclick="deleteStudent(${student.id})">
+                            Xóa
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+    }
 }
 
 function deleteStudent(studentId) {
@@ -131,10 +117,6 @@ function clearForm() {
     document.getElementById('grade').value = '';
 }
 
-function loadStudentsByGrade() {
-    const gradeId = document.getElementById('filterGradeAdd').value;
-    searchStudentAddStu(); // Gọi lại hàm tìm kiếm
-}
 
 // ✅ Giao diện Lập danh sách lớp
 function printClass(id) {
@@ -247,69 +229,6 @@ function selectStudent(id, name, className) {
     document.getElementById('studentName').innerText = `${name} (${className})`;
     document.getElementById('btnChangeClass').disabled = false; // Kích hoạt nút chuyển lớp
 }
-
-
-//function changeClass() {
-//    if (!selectedStudent) {
-//        alert("Vui lòng chọn học sinh!");
-//        return;
-//    }
-//
-//    if (!selectedClassId) {
-//        alert("Vui lòng chọn lớp mới!");
-//        return;
-//    }
-//
-//    fetch('/change_class', {
-//        method: 'POST',
-//        headers: {'Content-Type': 'application/json'},
-//        body: JSON.stringify({
-//            student_id: selectedStudent.id,
-//            new_class_id: selectedClassId
-//        })
-//    })
-//    .then(res => res.json())
-//    .then(data => {
-//        const resultDiv = document.getElementById('changeClassResult');
-//        if (data.success) {
-//            // Cập nhật lớp cũ
-//            if (data.old_class.id) {
-//                const oldClassBtn = document.querySelector(`.class-option[data-class-id="${data.old_class.id}"]`);
-//                if (oldClassBtn) {
-//                    oldClassBtn.textContent = `${data.old_class.name} (${data.old_class.current_student}/${max_per_class})`;
-//                    if (data.old_class.current_student < max_per_class) {
-//                        oldClassBtn.classList.remove('disabled');
-//                    }
-//                }
-//            }
-//
-//            // Cập nhật lớp mới
-//            const newClassBtn = document.querySelector(`.class-option[data-class-id="${data.new_class.id}"]`);
-//            if (newClassBtn) {
-//                newClassBtn.textContent = `${data.new_class.name} (${data.new_class.current_student}/${max_per_class})`;
-//                if (data.new_class.current_student >= max_per_class) {
-//                    newClassBtn.classList.add('disabled');
-//                }
-//            }
-//
-//            // Reset giao diện
-//            resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
-//            document.getElementById('studentName').innerText = "Chưa chọn học sinh";
-//            document.getElementById('btnChangeClass').disabled = true;
-//            selectedStudent = null;
-//            selectedClassId = null;
-//
-//            // Xóa active class
-//            document.querySelectorAll('.class-option').forEach(btn => btn.classList.remove('active'));
-//        } else {
-//            resultDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
-//        }
-//    })
-//    .catch(error => {
-//        console.error('Lỗi:', error);
-//        alert("Có lỗi xảy ra khi kết nối đến server");
-//    });
-//}
 
 function changeClass() {
     if (!selectedStudent) {
@@ -452,9 +371,3 @@ function searchStudent() {
     })
     .catch(error => console.error('Lỗi:', error));
 }
-
-// Chung
-document.addEventListener('DOMContentLoaded', () => {
-    loadStudents(); // Tự động tải danh sách khi trang web được mở
-    loadStudentsAdjust();
-});

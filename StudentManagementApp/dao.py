@@ -38,14 +38,6 @@ def get_class_is_blank(id_grade):
     # Lọc lớp chưa đầy
     return [c for c in classes if c.current_student < get_regulation_value("Quy định số lượng học sinh trong 1 lớp")]
 
-# Hàm này Giang dùm kh, này quan trọng bên t
-# def get_class_is_blank():
-#     classes = Class.query.all()
-#     classes_blank = []
-#     for c in classes:
-#         if len(c.students) < app.config['soluong']:
-#             classes_blank.append(c)
-#     return classes_blank
 
 def get_student_by_class(id_class):
     return Student.query.filter(Student.id_class.__eq__(id_class)).all()
@@ -97,56 +89,80 @@ def create_class_list():
         unassigned = [s for s in students if not s.id_class]
         max_per_class = get_regulation_value("Quy định số lượng học sinh trong 1 lớp")
 
-        # Bước 1: Tính số lớp cần thiết
-        required_classes = len(unassigned) // max_per_class
-        if len(unassigned) % max_per_class != 0:
-            required_classes += 1
-
-        # Bước 2: Tạo thêm lớp nếu thiếu
+        # ✅ Bước 0: Đảm bảo mỗi khối có ít nhất 1 lớp
         current_classes = Class.query.filter(Class.id_grade == g.id_grade).all()
-        current_class_count = len(current_classes)
+        if not current_classes:
+            grade_num = {1: "10", 2: "11", 3: "12"}.get(g.id_grade, "10")
+            new_class = Class(name_class=f"{grade_num}A1", id_grade=g.id_grade)
+            db.session.add(new_class)
+            db.session.commit()
+            current_classes = [new_class]
 
-        # Tạo lớp mới nếu cần
-        if current_class_count < required_classes:
-            for _ in range(required_classes - current_class_count):
-                last_class = Class.query.filter(Class.id_grade == g.id_grade) \
-                    .order_by(Class.id_class.desc()).first()
-                grade_name = {1: "10", 2: "11", 3: "12"}.get(g.id_grade, "10")
-                new_number = int(last_class.name_class.split("A")[1]) + 1 if last_class else 1
-                new_class_name = f"{grade_name}A{new_number}"
-                new_class = Class(name_class=new_class_name, id_grade=g.id_grade)
-                db.session.add(new_class)
-                db.session.commit()
-                current_classes.append(new_class)
+        # ✅ Bước 1: Tính toán số lớp cần thiết
+        required_classes = max(
+            (len(unassigned) + max_per_class - 1) // max_per_class,
+            len(current_classes)  # Giữ nguyên nếu đủ
+        )
 
-        # Bước 3: Phân bổ học sinh đều vào các lớp
-        available_classes = current_classes.copy()
-        random.shuffle(unassigned)  # Xáo trộn học sinh
+        # ✅ Bước 2: Tạo lớp mới nếu thiếu
+        while len(current_classes) < required_classes:
+            last_class = Class.query.filter(Class.id_grade == g.id_grade) \
+                .order_by(Class.name_class.desc()).first()
+            grade_num = {1: "10", 2: "11", 3: "12"}.get(g.id_grade, "10")
 
-        for idx, student in enumerate(unassigned):
-            target_class = available_classes[idx % len(available_classes)]
-            if target_class.current_student < max_per_class:
-                student.id_class = target_class.id_class
-                db.session.commit()
+            # Tạo số thứ tự lớp mới
+            if last_class:
+                last_num = int(last_class.name_class.split("A")[1])
+                new_num = last_num + 1
             else:
-                # Tìm lớp chưa đầy đầu tiên
-                for cls in available_classes:
-                    if cls.current_student < max_per_class:
-                        student.id_class = cls.id_class
-                        db.session.commit()
-                        break
+                new_num = len(current_classes) + 1
 
-        # Bước 4: Cập nhật lại danh sách chưa phân lớp
-        current_classes = Class.query.filter(Class.id_grade == g.id_grade).all()
-        for student in get_student_by_id_grade(g.id_grade):
-            if not student.id_class:
-                unassigned_students[g.id_grade].append(student)
+            new_class = Class(
+                name_class=f"{grade_num}A{new_num}",
+                id_grade=g.id_grade
+            )
+            db.session.add(new_class)
+            db.session.commit()
+            current_classes.append(new_class)
+
+        # ✅ Bước 3: Phân bổ học sinh
+        classes_sorted = sorted(current_classes,
+                                key=lambda c: c.current_student)
+
+        for student in unassigned:
+            target_class = None
+
+            # Tìm lớp chưa đầy đầu tiên
+            for cls in classes_sorted:
+                if cls.current_student < max_per_class:
+                    target_class = cls
+                    break
+
+            # Nếu tất cả đều đầy, tạo lớp mới
+            if not target_class:
+                last_class = classes_sorted[-1]
+                grade_num = {1: "10", 2: "11", 3: "12"}.get(g.id_grade, "10")
+                new_num = int(last_class.name_class.split("A")[1]) + 1
+                target_class = Class(
+                    name_class=f"{grade_num}A{new_num}",
+                    id_grade=g.id_grade
+                )
+                db.session.add(target_class)
+                db.session.commit()
+                classes_sorted.append(target_class)
+
+            # Gán học sinh vào lớp
+            student.id_class = target_class.id_class
+            db.session.commit()
+
+        # Cập nhật danh sách chưa phân lớp
+        unassigned_students[g.id_grade] = [s for s in students
+                                           if not s.id_class]
 
     return {
         "classes": get_class(),
         "unassigned_students": unassigned_students
     }
-
 
 
 
@@ -195,11 +211,16 @@ def count_users():
 def count_subjects():
     return Subject.query.count()
 
+def count_class():
+    return Class.query.count()
+
+def count_Teacher():
+    return User.query.filter_by(user_role=UserRoleEnum.TEACHER).count()
+
 def auth_admin(username, password):
     password = str(hashlib.md5(password.encode('utf-8')).hexdigest())
     return User.query.filter(User.username.__eq__(username),
                              User.password.__eq__(password), User.user_role.__eq__(UserRoleEnum.ADMIN)).first()
-
 
 if __name__ == '__main__':
     with app.app_context():

@@ -14,7 +14,7 @@ def create_fake_students():
         grades = Grade.query.all()
 
         # Số học sinh cần tạo (ví dụ: 200 học sinh)
-        num_students = 800
+        num_students = 60
 
         for _ in range(num_students):
             # Random thông tin học sinh

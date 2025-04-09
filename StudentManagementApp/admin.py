@@ -50,8 +50,7 @@ class LogoutView(AuthenticatedUser):
         return redirect('/admin')
 
 class AdminIndex(AdminIndexView):
-    # def is_accessible(self):
-        # return current_user.is_authenticated and current_user.user_role == UserRoleEnum.ADMIN
+
     @expose('/')
     def index(self):
         total_users = dao.count_users()
@@ -65,13 +64,8 @@ class AdminIndex(AdminIndexView):
                            total_classes=total_classes,
                            total_teachers=total_teachers,
                            )
-    #
-    # def is_accessible(self):
-    #     return current_user.is_authenticated and current_user.user_role == UserRoleEnum.ADMIN
 
 admin = Admin(app=app, name='Quản lý học sinh', template_mode='bootstrap4' , index_view=AdminIndex(name='Trang chủ'))
-
-# admin.add_view = AdminIndex(name='Trang chủ')
 
 admin.add_view(SubjectView(Subject, db.session, name='Quản lý môn học'))
 admin.add_view(StatsView(name='Thống kê báo cáo'))

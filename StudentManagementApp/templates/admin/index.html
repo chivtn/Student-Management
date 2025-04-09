@@ -1,355 +1,602 @@
 {% extends 'admin/master.html' %}
 
 {% block body %}
-{% if current_user.is_authenticated %}
-<div class="admin-dashboard">
-    <div class="dashboard-header">
-        <h1 class="text-center">Trang Quản Trị Hệ Thống</h1>
-        <div class="user-greeting">
-            <span class="welcome-text">Xin chào,</span>
-            <span class="username">{{ current_user.name }}</span>
-            <span class="welcome-emoji">👋</span>
-        </div>
-    </div>
-
-    {%if err_msg%}
-    <div class="alert alert-danger alert-dismissible fade show">
-        {{err_msg}}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {%endif%}
-
-    <div class="stats-container">
-        <div class="stats-row">
-            <div class="stat-card bg-primary">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-value">{{ total_users }}</div>
-                    <div class="stat-label">Tổng Người Dùng</div>
-                </div>
-            </div>
-
-            <div class="stat-card bg-success">
-                <div class="stat-icon">
-                    <i class="fas fa-book"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-value">{{ total_subjects }}</div>
-                    <div class="stat-label">Tổng Môn Học</div>
-                </div>
-            </div>
-
-            <div class="stat-card bg-warning">
-                <div class="stat-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-value">{{ total_classes }}</div>
-                    <div class="stat-label">Tổng Lớp Học</div>
-                </div>
-            </div>
-
-            <div class="stat-card bg-danger">
-                <div class="stat-icon">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                </div>
-                <div class="stat-info">
-                    <div class="stat-value">{{ total_teachers }}</div>
-                    <div class="stat-label">Giáo Viên</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="recent-activity">
-        <div class="activity-card">
-            <h3><i class="fas fa-history me-2"></i>Hoạt động gần đây</h3>
-            <div class="activity-list">
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-user-plus text-success"></i>
-                    </div>
-                    <div class="activity-content">
-                        <span class="activity-text">Người dùng mới đã đăng ký</span>
-                        <span class="activity-time">2 giờ trước</span>
-                    </div>
-                </div>
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-book text-primary"></i>
-                    </div>
-                    <div class="activity-content">
-                        <span class="activity-text">Môn học mới đã được thêm</span>
-                        <span class="activity-time">5 giờ trước</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-{% else %}
-    <div class="login-container">
-        <div class="login-card">
-            <div class="login-header">
-                <h1><i class="fas fa-lock me-2"></i>Đăng Nhập </h1>
-                <p>Vui lòng nhập thông tin đăng nhập</p>
-            </div>
-
-            <form method="post" action="/admin/login">
-                <div class="form-group">
-                    <label for="username"><i class="fas fa-user me-2"></i>Tên đăng nhập</label>
-                    <input type="text" class="form-control" id="username" name="username" placeholder="Nhập tên đăng nhập">
-                </div>
-                <div class="form-group">
-                    <label for="pwd"><i class="fas fa-key me-2"></i>Mật khẩu</label>
-                    <input type="password" class="form-control" id="pwd" name="password" placeholder="Nhập mật khẩu">
-                </div>
-                <button type="submit" class="btn btn-primary btn-login">
-                    <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
-                </button>
-            </form>
-        </div>
-    </div>
-    {% endif %}
-</div>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
 <style>
-    /* Main container */
-    .admin-dashboard {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        padding: 20px;
-        color: #333;
-        max-width: 1200px;
+    :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3f37c9;
+        --accent-color: #4895ef;
+        --light-color: #f8f9fa;
+        --dark-color: #212529;
+        --success-color: #4cc9f0;
+        --warning-color: #f72585;
+    }
+
+    .statistics-container {
+        max-width: 1400px;
         margin: 0 auto;
+        padding: 2rem;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* Header section */
-    .dashboard-header {
-        margin-bottom: 30px;
+    .statistics-header {
         text-align: center;
+        margin-bottom: 2.5rem;
+        position: relative;
     }
 
-    .dashboard-header h1 {
-        color: #2c3e50;
-        font-weight: 600;
-        margin-bottom: 10px;
-    }
-
-    .user-greeting {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        font-size: 1.2rem;
-        color: #7f8c8d;
-    }
-
-    .username {
-        font-weight: 600;
-        color: #3498db;
-    }
-
-    .welcome-emoji {
-        font-size: 1.5rem;
-    }
-
-    /* Stats cards */
-    .stats-container {
-        margin-bottom: 30px;
-    }
-
-    .stats-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-    }
-
-    .stat-card {
-        border-radius: 10px;
-        padding: 20px;
-        color: white;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-icon {
-        font-size: 2rem;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background-color: rgba(255, 255, 255, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .stat-value {
-        font-size: 2rem;
+    .statistics-title {
+        font-size: 2.5rem;
         font-weight: 700;
-        line-height: 1;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        display: inline-block;
+        background: linear-gradient(to right, var(--primary-color), var(--warning-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
-    .stat-label {
-        font-size: 1rem;
-        opacity: 0.9;
+    .statistics-subtitle {
+        color: var(--dark-color);
+        font-size: 1.1rem;
+        opacity: 0.8;
     }
 
-    /* Activity section */
-    .recent-activity {
-        margin-top: 30px;
+    .filter-section {
+        background-color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2.5rem;
     }
 
-    .activity-card {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        align-items: end;
     }
 
-    .activity-card h3 {
-        color: #2c3e50;
+    .filter-group {
+        position: relative;
+    }
+
+    .filter-label {
+        display: block;
         font-weight: 600;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
+        margin-bottom: 0.8rem;
+        color: var(--dark-color);
+        font-size: 1rem;
     }
 
-    .activity-list {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .activity-item {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 10px;
+    .filter-select {
+        width: 100%;
+        padding: 0.8rem 1.2rem;
+        border: 2px solid #e9ecef;
         border-radius: 8px;
-        transition: background-color 0.2s ease;
+        font-size: 1rem;
+        color: var(--dark-color);
+        background-color: white;
+        transition: all 0.3s ease;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1em;
     }
 
-    .activity-item:hover {
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.2);
+    }
+
+    .btn-statistics {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.8rem 2rem;
+        background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        width: 100%;
+    }
+
+    .btn-statistics:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+    }
+
+    .btn-statistics:active {
+        transform: translateY(0);
+    }
+
+    .result-container {
+        background-color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        margin-top: 1rem;
+        display: none;
+    }
+
+    .report-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .report-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .report-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+        color: #6c757d;
+    }
+
+    .meta-icon {
+        color: var(--accent-color);
+    }
+
+    .export-btn {
+        padding: 8px 15px;
+        background-color: white;
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+        border-radius: 6px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .export-btn:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .report-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 0 1px #e9ecef;
+    }
+
+    .data-table thead {
+        background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+        color: white;
+    }
+
+    .data-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+    }
+
+    .data-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: middle;
+    }
+
+    .data-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .data-table tbody tr:hover {
         background-color: #f8f9fa;
     }
 
-    .activity-icon {
-        font-size: 1.2rem;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: #f1f1f1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .chart-section {
+        position: relative;
     }
 
-    .activity-content {
+    .chart-controls {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        align-items: center;
+    }
+
+    .chart-select {
         flex: 1;
+        padding: 0.6rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.7rem center;
+        background-size: 1em;
     }
 
-    .activity-text {
-        display: block;
-        font-weight: 500;
-    }
-
-    .activity-time {
-        font-size: 0.8rem;
-        color: #7f8c8d;
-    }
-
-    /* Login page */
-    .login-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 70vh;
-    }
-
-    .login-card {
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        padding: 30px;
-        width: 100%;
-        max-width: 450px;
-    }
-
-    .login-header {
-        text-align: center;
-        margin-bottom: 30px;
-    }
-
-    .login-header h1 {
-        color: #2c3e50;
-        font-weight: 600;
+    .chart-btn {
+        padding: 0.6rem 1.2rem;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 0.5rem;
     }
 
-    .login-header p {
-        color: #7f8c8d;
-        margin-top: 10px;
+    .chart-btn:hover {
+        background-color: var(--secondary-color);
     }
 
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-group label {
-        display: flex;
-        align-items: center;
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: #2c3e50;
-    }
-
-    .form-control {
-        border: 1px solid #ddd;
+    .chart-container {
+        height: 400px;
+        background-color: white;
         border-radius: 8px;
-        padding: 12px 15px;
-        transition: border-color 0.3s ease;
+        padding: 1rem;
+        box-shadow: 0 0 0 1px #e9ecef;
+        position: relative;
     }
 
-    .form-control:focus {
-        border-color: #3498db;
-        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-    }
-
-    .btn-login {
-        width: 100%;
-        padding: 12px;
-        border-radius: 8px;
-        font-weight: 500;
-        margin-top: 10px;
+    .no-data {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        height: 100%;
+        color: #6c757d;
+        font-size: 1.1rem;
     }
 
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .stats-row {
+    .no-data-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #e9ecef;
+    }
+
+    @media (max-width: 992px) {
+        .report-grid {
             grid-template-columns: 1fr;
         }
 
-        .login-card {
-            padding: 20px;
+        .statistics-title {
+            font-size: 2rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .statistics-container {
+            padding: 1rem;
+        }
+
+        .filter-section {
+            padding: 1.5rem;
+        }
+
+        .result-container {
+            padding: 1.5rem;
+        }
+
+        .chart-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .chart-btn {
+            justify-content: center;
         }
     }
 </style>
 
-<!-- Font Awesome for icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<div class="statistics-container">
+    <div class="statistics-header">
+        <h1 class="statistics-title">
+            <i class="fas fa-chart-pie"></i> BÁO CÁO THỐNG KÊ MÔN HỌC
+        </h1>
+    </div>
 
+    <div class="filter-section">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="id_subject" class="filter-label">
+                    <i class="fas fa-book-open me-2"></i>Môn học
+                </label>
+                <select id="id_subject" name="id_subject" class="filter-select">
+                    {% for s in subjects %}
+                    <option value="{{s.id_subject}}">{{s.name_subject}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="id_semester" class="filter-label">
+                    <i class="fas fa-calendar-alt me-2"></i>Học kỳ
+                </label>
+                <select id="id_semester" name="id_semester" class="filter-select">
+                    {% for s in semesters %}
+                    <option value="{{s.id_semester}}">{{s.name_semester}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <button type="button" class="btn-statistics" onclick="statisticsScore()">
+                    <i class="fas fa-chart-bar me-2"></i> XEM BÁO CÁO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="result-container" id="result">
+        <div class="report-header">
+            <h2 class="report-title">
+                <i class="fas fa-file-alt"></i> KẾT QUẢ THỐNG KÊ
+            </h2>
+            <div class="report-meta">
+                <div class="meta-item">
+                    <i class="fas fa-book meta-icon"></i>
+                    <span id="subject">Môn học: Toán học</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-calendar meta-icon"></i>
+                    <span id="semester">Học kỳ: Học kỳ 1</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-university meta-icon"></i>
+                    <span id="schoolyear">Năm học: 2023-2024</span>
+                </div>
+            </div>
+
+            <div class="report-actions">
+                <button class="export-btn" onclick="exportExcel()">
+                    <i class="fas fa-file-excel"></i> Xuất Excel
+                </button>
+            </div>
+
+        </div>
+
+        <div class="report-grid">
+            <div class="table-section">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Lớp</th>
+                            <th>Sĩ số</th>
+                            <th>Đạt</th>
+                            <th>Tỷ lệ</th>
+                        </tr>
+                        </thead>
+                        <tbody id="table_result">
+                        <!-- Data will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-controls">
+                    <select id="select_chart" class="chart-select">
+                        <option value="pie">Biểu đồ tròn</option>
+                        <option value="bar">Biểu đồ cột</option>
+                        <option value="doughnut">Biểu đồ vành khuyên</option>
+                        <option value="line">Biểu đồ đường</option>
+                    </select>
+                    <button type="button" class="chart-btn" onclick="drawChart()">
+                        <i class="fas fa-chart-line me-2"></i> VẼ BIỂU ĐỒ
+                    </button>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="chart"></canvas>
+                    <div class="no-data" id="no-data">
+                        <i class="fas fa-chart-bar no-data-icon"></i>
+                        <p>Chọn tiêu chí và nhấn "Vẽ biểu đồ" để xem kết quả</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    let myChart = null;
+    let resultData = {};
+
+    function statisticsScore() {
+        const semesterId = document.getElementById('id_semester').value;
+        const subjectId = document.getElementById('id_subject').value;
+
+        fetch("/api/statisticsScore", {
+            method: "POST",
+            body: JSON.stringify({
+                'id_semester': semesterId,
+                'id_subject': subjectId
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(function(res) {
+            if (!res.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return res.json();
+        }).then(function(data) {
+            if (!data || data.length === 0) {
+                throw new Error('No data received');
+            }
+
+            const resultContainer = document.getElementById('result');
+            resultContainer.style.display = 'block';
+
+            document.getElementById('subject').textContent = `Môn học: ${data[0].subject}`;
+            document.getElementById('semester').textContent = `Học kỳ: ${data[0].semester}`;
+            document.getElementById('schoolyear').textContent = `Năm học: ${data[0].schoolyear}`;
+
+            const tableBody = document.getElementById('table_result');
+            tableBody.innerHTML = '';
+
+            resultData = data;
+
+            for (let i = 1; i <= data[0].quantity; i++) {
+                const row = tableBody.insertRow();
+                row.insertCell().textContent = i;
+                row.insertCell().textContent = data[i].class;
+                row.insertCell().textContent = data[i].quantity_student;
+                row.insertCell().textContent = data[i].quantity_passed;
+                row.insertCell().textContent = `${data[i].rate}%`;
+            }
+
+            // Hide no-data message when we have results
+            document.getElementById('no-data').style.display = 'none';
+
+            // Draw initial chart
+            drawChart();
+        }).catch(function(error) {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.');
+        });
+    }
+
+    function drawChart() {
+        const ctx = document.getElementById('chart');
+        const chartType = document.getElementById('select_chart').value;
+
+        // Hide no-data message when drawing chart
+        document.getElementById('no-data').style.display = 'none';
+
+        // Destroy previous chart if exists
+        if (myChart) {
+            myChart.destroy();
+        }
+
+        // Check if we have data
+        if (!resultData || resultData.length === 0) {
+            document.getElementById('no-data').style.display = 'flex';
+            return;
+        }
+
+        const labels = [];
+        const dataValues = [];
+        const backgroundColors = [];
+
+        for (let i = 1; i <= resultData[0].quantity; i++) {
+            labels.push(resultData[i].class);
+            dataValues.push(resultData[i].quantity_passed);
+
+            // Generate random colors for each data point
+            const r = Math.floor(Math.random() * 255);
+            const g = Math.floor(Math.random() * 255);
+            const b = Math.floor(Math.random() * 255);
+            backgroundColors.push(`rgba(${r}, ${g}, ${b}, 0.7)`);
+        }
+
+        myChart = new Chart(ctx, {
+            type: chartType,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số lượng đạt',
+                    data: dataValues,
+                    backgroundColor: backgroundColors,
+                    borderColor: backgroundColors.map(color => color.replace('0.7', '1')),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== undefined) {
+                                    label += context.parsed.y;
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+
+    function exportExcel() {
+        const wb = XLSX.utils.book_new();
+        const wsData = [['STT', 'Lớp', 'Sĩ số', 'Đạt', 'Tỷ lệ']];
+        const table = document.getElementById('table_result');
+        const rows = table.rows;
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = [];
+            for (let j = 0; j < rows[i].cells.length; j++) {
+                row.push(rows[i].cells[j].textContent);
+            }
+            wsData.push(row);
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        XLSX.utils.book_append_sheet(wb, ws, 'Thống kê môn học');
+        XLSX.writeFile(wb, 'bao_cao_thong_ke.xlsx');
+    }
+
+<!--    // Initialize with first chart when page loads (optional)-->
+    document.addEventListener('DOMContentLoaded', function() {
+<!--        // You can add initialization code here if needed-->
+    });
+</script>
 {% endblock %}
