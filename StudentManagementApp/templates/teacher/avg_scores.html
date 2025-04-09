@@ -2,82 +2,83 @@
 
 {% block content %}
 <div class="container py-4">
-  <div class="card shadow">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">Xuất điểm trung bình</h5>
-      <a href="{{ url_for('teacher.export_avg_scores', class_id=selected_class, year=selected_year, semester=selected_semester) }}" class="btn btn-light btn-sm">📥 Xuất Excel</a>
-    </div>
-    <div class="card-body">
-      <form method="GET" action="{{ url_for('teacher.view_avg_scores') }}" class="row g-3 mb-4">
-        <div class="col-md-4">
-          <label class="form-label">Lớp</label>
-          <select class="form-select" name="class_id" required>
-            <option value="">-- Chọn lớp --</option>
-            {% for c in classes %}
-              <option value="{{ c.id }}" {% if selected_class == c.id %}selected{% endif %}>{{ c.name }}</option>
-            {% endfor %}
-          </select>
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Xuất điểm trung bình</h5>
+            <a href="{{ url_for('teacher.export_avg_scores', class_id=selected_class, year=selected_year, semester=selected_semester) }}"
+               class="btn btn-light btn-sm">📥 Xuất Điểm</a>
         </div>
-        <div class="col-md-4">
-          <label class="form-label">Năm học</label>
-          <select class="form-select" name="year" required>
-            <option value="">-- Chọn năm học --</option>
-            {% for y in years %}
-              <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Học kỳ</label>
-          <select class="form-select" name="semester">
-            <option value="">Cả năm</option>
-            {% for s in semesters %}
-              <option value="{{ s.id }}" {% if selected_semester == s.id %}selected{% endif %}>{{ s.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-12 d-flex justify-content-end">
-          <button type="submit" class="btn btn-success">🔍 Xem kết quả</button>
-        </div>
-      </form>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('teacher.view_avg_scores') }}" class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Lớp</label>
+                    <select class="form-select" name="class_id" required>
+                        <option value="">-- Chọn lớp --</option>
+                        {% for c in classes %}
+                        <option value="{{ c.id }}" {% if selected_class == c.id %}selected{% endif %}>{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Năm học</label>
+                    <select class="form-select" name="year" required>
+                        <option value="">-- Chọn năm học --</option>
+                        {% for y in years %}
+                        <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Học kỳ</label>
+                    <select class="form-select" name="semester">
+                        <option value="">Cả năm</option>
+                        {% for s in semesters %}
+                        <option value="{{ s.id }}" {% if selected_semester == s.id %}selected{% endif %}>{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-success">🔍 Xem kết quả</button>
+                </div>
+            </form>
 
-      {% if scores %}
-        <div class="table-responsive">
-          <table class="table table-bordered align-middle table-striped">
-            <thead class="table-dark">
-              <tr>
-                <th>#</th>
-                <th>Họ tên học sinh</th>
-                {% if selected_semester %}
-                  <th>Điểm TB học kỳ {{ selected_semester }}</th>
-                {% else %}
-                  <th>Điểm TB học kỳ 1</th>
-                  <th>Điểm TB học kỳ 2</th>
-                  <th>Điểm TB cả năm</th>
-                {% endif %}
-              </tr>
-            </thead>
-            <tbody>
-              {% for i, s in enumerate(scores, 1) %}
-              <tr>
-                <td>{{ i }}</td>
-                <td>{{ s.full_name }}</td>
-                {% if selected_semester %}
-                  <td>{{ s.avg_score }}</td>
-                {% else %}
-                  <td>{{ s.avg_score_sem1 }}</td>
-                  <td>{{ s.avg_score_sem2 }}</td>
-                  <td>{{ s.avg_score_year }}</td>
-                {% endif %}
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+            {% if scores %}
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered table-striped align-middle rounded shadow-sm overflow-hidden">
+                    <thead class="table-primary text-center align-middle">
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th class="text-start">Họ tên học sinh</th>
+                            {% if selected_semester %}
+                                <th>Điểm TB học kỳ {{ selected_semester }}</th>
+                            {% else %}
+                                <th>Điểm TB học kỳ 1</th>
+                                <th>Điểm TB học kỳ 2</th>
+                                <th>Điểm TB cả năm</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in scores %}
+                        <tr>
+                            <td class="text-center fw-semibold">{{ loop.index }}</td>
+                            <td class="text-start">{{ s.full_name }}</td>
+                            {% if selected_semester %}
+                                <td class="text-center">{{ s.avg_score }}</td>
+                            {% else %}
+                                <td class="text-center">{{ s.avg_score_sem1 }}</td>
+                                <td class="text-center">{{ s.avg_score_sem2 }}</td>
+                                <td class="text-center fw-semibold">{{ s.avg_score_year }}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">Chưa có dữ liệu</div>
+            {% endif %}
         </div>
-      {% else %}
-        <div class="alert alert-info text-center">Chưa có dữ liệu</div>
-      {% endif %}
     </div>
-  </div>
 </div>
 {% endblock %}

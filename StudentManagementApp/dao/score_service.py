@@ -1,8 +1,11 @@
 # score_service.py
 from StudentManagementApp import db
-from StudentManagementApp.models import ScoreSheet, ScoreDetail, DraftScore
+from StudentManagementApp.models import ScoreSheet, ScoreDetail, DraftScore, Teacher, Classroom, Student
 from StudentManagementApp.models.enums import ScoreType
 import re
+from io import BytesIO
+from openpyxl import Workbook
+from openpyxl.styles import Alignment
 
 def fetch_scores_for_students(students, academic_year, semester_id, subject_id):
     scores_map = {}

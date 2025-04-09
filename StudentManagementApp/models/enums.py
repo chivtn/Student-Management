@@ -1,26 +1,26 @@
 from enum import Enum
 
 class Role(Enum):
-    ADMIN = "QUAN_TRI_VIEN"
-    TEACHER = "GIAO_VIEN"
-    STAFF = "NHAN_VIEN"
+    ADMIN = "Quản trị viên"
+    TEACHER = "Giáo viên"
+    STAFF = "Nhân viên"
 
 class Gender(Enum):
-    MALE = "NAM"
-    FEMALE = "NU"
+    MALE = "Nam"
+    FEMALE = "Nữ"
 
 class ScoreType(Enum):
-    FIFTEEN_MIN = "15P"
-    ONE_PERIOD = "1TIET"
-    FINAL = "THI"
+    FIFTEEN_MIN = "Điểm 15 phút"
+    ONE_PERIOD = "Điểm 1 tiết"
+    FINAL = "Điểm thi"
 
 class Grade(Enum):
-    GRADE_10 = "LOP_10"
-    GRADE_11 = "LOP_11"
-    GRADE_12 = "LOP_12"
+    GRADE_10 = "Lớp 10"
+    GRADE_11 = "Lớp 11"
+    GRADE_12 = "Lớp 12"
 
 class Relationship(Enum):
-    FATHER = "CHA"
-    MOTHER = "ME"
-    GUARDIAN = "NGUOI_GIAM_HO"
+    FATHER = "Cha"
+    MOTHER = "Mẹ"
+    GUARDIAN = "Người giám hộ"
 

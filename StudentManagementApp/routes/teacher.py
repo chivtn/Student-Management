@@ -1,10 +1,9 @@
 # routes/teacher.py
-from flask import Blueprint, render_template, request, send_file, redirect, url_for, flash
+from flask import Blueprint, render_template, request, send_file, redirect, url_for, flash, render_template_string
 from StudentManagementApp import db
 from StudentManagementApp.models import Teacher, Classroom, Student, Subject, Semester
-import pandas as pd
-from io import BytesIO
-from StudentManagementApp.dao import score_service
+from StudentManagementApp.dao import score_service, export_score_service
+from flask import send_file, request
 
 teacher = Blueprint('teacher', __name__, url_prefix='/teacher')
 
@@ -65,35 +64,8 @@ def export_avg_scores():
     year = request.args.get('year')
     semester = request.args.get('semester', type=int)
 
-    students = Student.query.filter_by(classroom_id=class_id).all()
-    data = []
-
-    for student in students:
-        if semester:
-            avg = score_service.calculate_avg_score(student.id, year, semester)
-            data.append({
-                "Student": student.full_name,
-                f"Semester {semester} Avg": round(avg, 2) if avg is not None else None
-            })
-        else:
-            avg1 = score_service.calculate_avg_score(student.id, year, 1)
-            avg2 = score_service.calculate_avg_score(student.id, year, 2)
-            avg_year = round((avg1 + avg2) / 2, 2) if avg1 is not None and avg2 is not None else None
-            data.append({
-                "Student": student.full_name,
-                "Semester 1 Avg": round(avg1, 2) if avg1 is not None else None,
-                "Semester 2 Avg": round(avg2, 2) if avg2 is not None else None,
-                "Year Avg": avg_year
-            })
-
-    df = pd.DataFrame(data)
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='Avg Scores')
-    output.seek(0)
-
-    filename = f'avg_scores_class_{class_id}_{year}.xlsx'
-    return send_file(output, download_name=filename, as_attachment=True)
+    excel_file, filename = export_score_service.generate_avg_score_excel(class_id, year, semester)
+    return send_file(excel_file, download_name=filename, as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 @teacher.route('/my_classes')
 def view_classes():
