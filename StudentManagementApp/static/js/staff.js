@@ -249,6 +249,68 @@ function selectStudent(id, name, className) {
 }
 
 
+//function changeClass() {
+//    if (!selectedStudent) {
+//        alert("Vui lòng chọn học sinh!");
+//        return;
+//    }
+//
+//    if (!selectedClassId) {
+//        alert("Vui lòng chọn lớp mới!");
+//        return;
+//    }
+//
+//    fetch('/change_class', {
+//        method: 'POST',
+//        headers: {'Content-Type': 'application/json'},
+//        body: JSON.stringify({
+//            student_id: selectedStudent.id,
+//            new_class_id: selectedClassId
+//        })
+//    })
+//    .then(res => res.json())
+//    .then(data => {
+//        const resultDiv = document.getElementById('changeClassResult');
+//        if (data.success) {
+//            // Cập nhật lớp cũ
+//            if (data.old_class.id) {
+//                const oldClassBtn = document.querySelector(`.class-option[data-class-id="${data.old_class.id}"]`);
+//                if (oldClassBtn) {
+//                    oldClassBtn.textContent = `${data.old_class.name} (${data.old_class.current_student}/${max_per_class})`;
+//                    if (data.old_class.current_student < max_per_class) {
+//                        oldClassBtn.classList.remove('disabled');
+//                    }
+//                }
+//            }
+//
+//            // Cập nhật lớp mới
+//            const newClassBtn = document.querySelector(`.class-option[data-class-id="${data.new_class.id}"]`);
+//            if (newClassBtn) {
+//                newClassBtn.textContent = `${data.new_class.name} (${data.new_class.current_student}/${max_per_class})`;
+//                if (data.new_class.current_student >= max_per_class) {
+//                    newClassBtn.classList.add('disabled');
+//                }
+//            }
+//
+//            // Reset giao diện
+//            resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+//            document.getElementById('studentName').innerText = "Chưa chọn học sinh";
+//            document.getElementById('btnChangeClass').disabled = true;
+//            selectedStudent = null;
+//            selectedClassId = null;
+//
+//            // Xóa active class
+//            document.querySelectorAll('.class-option').forEach(btn => btn.classList.remove('active'));
+//        } else {
+//            resultDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+//        }
+//    })
+//    .catch(error => {
+//        console.error('Lỗi:', error);
+//        alert("Có lỗi xảy ra khi kết nối đến server");
+//    });
+//}
+
 function changeClass() {
     if (!selectedStudent) {
         alert("Vui lòng chọn học sinh!");
@@ -272,49 +334,39 @@ function changeClass() {
     .then(data => {
         const resultDiv = document.getElementById('changeClassResult');
         if (data.success) {
-            // Cập nhật lớp mới
-            const newClassButton = document.querySelector(`.class-option[data-class-id="${data.new_class.id}"]`);
-            if (newClassButton) {
-                // Giữ nguyên tên lớp, chỉ cập nhật số lượng
-                newClassButton.textContent = newClassButton.textContent.replace(
-                    /\(\d+\/40\)/,
-                    `(${data.new_class.current_student}/40)`
-                );
-                if (data.new_class.current_student >= 40) {
-                    newClassButton.classList.add('disabled');
-                }
-            }
-
-            // Cập nhật lớp cũ (nếu có)
-            if (data.old_class.id) {
-                const oldClassButton = document.querySelector(`.class-option[data-class-id="${data.old_class.id}"]`);
-                if (oldClassButton) {
+            // ✅ Cập nhật lớp CŨ
+            if (data.old_class?.id) {
+                const oldClassBtn = document.querySelector(`button[data-class-id="${data.old_class.id}"]`);
+                if (oldClassBtn) {
+                    // Cập nhật số lượng và trạng thái
                     const newCount = data.old_class.current_student;
-                    // Giữ nguyên tên lớp, chỉ cập nhật số lượng
-                    oldClassButton.textContent = oldClassButton.textContent.replace(
-                        /\(\d+\/40\)/,
-                        `(${newCount}/40)`
-                    );
-                    if (newCount < 40) {
-                        oldClassButton.classList.remove('disabled');
-                    }
+                    const max = data.max_per_class; // Lấy từ response
+                    oldClassBtn.textContent = `${data.old_class.name} (${newCount}/${max})`;
+                    oldClassBtn.classList.toggle('disabled', newCount >= max);
                 }
             }
 
-            // Phần còn lại giữ nguyên
+            // ✅ Cập nhật lớp MỚI
+            const newClassBtn = document.querySelector(`button[data-class-id="${data.new_class.id}"]`);
+            if (newClassBtn) {
+                const newCount = data.new_class.current_student;
+                const max = data.max_per_class;
+                newClassBtn.textContent = `${data.new_class.name} (${newCount}/${max})`;
+                newClassBtn.classList.toggle('disabled', newCount >= max);
+            }
+
+            // ✅ Cập nhật danh sách học sinh (không cần load lại trang)
+            searchStudent(); // Gọi lại hàm tìm kiếm để load danh sách mới
+
+            // ✅ Reset giao diện
             resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
             document.getElementById('studentName').innerText = "Chưa chọn học sinh";
             document.getElementById('btnChangeClass').disabled = true;
             selectedStudent = null;
             selectedClassId = null;
 
-            // Reset active class
-            document.querySelectorAll('.class-option').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            // Cập nhật danh sách học sinh
-            searchStudent();
+            // ✅ Xóa active class
+            document.querySelectorAll('.class-option').forEach(btn => btn.classList.remove('active'));
         } else {
             resultDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
         }

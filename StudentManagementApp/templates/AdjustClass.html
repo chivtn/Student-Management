@@ -90,10 +90,10 @@
                                 <div class="class-grid">
                                     {% for c in classes if c.id_grade == grade.id_grade %}
                                     <button type="button"
-                                            class="btn class-option {% if c.current_student >= 40 %}disabled{% endif %}"
+                                            class="btn class-option {% if c.current_student >= max_per_class %}disabled{% endif %}"
                                             data-class-id="{{ c.id_class }}"
                                             onclick="selectNewClass('{{ c.id_class }}', this)">
-                                        {{ c.name_class }} ({{ c.current_student }}/40)
+                                        {{ c.name_class }} ({{ c.current_student }}/{{ max_per_class }})
                                     </button>
                                     {% endfor %}
                                 </div>
@@ -111,5 +111,4 @@
         </div>
     </div>
 </div>
-
 {% endblock %}

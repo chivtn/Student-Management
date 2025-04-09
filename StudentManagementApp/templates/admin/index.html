@@ -1,8 +1,8 @@
 {% extends 'admin/master.html' %}
 
 {% block body %}
+{% if current_user.is_authenticated %}
 <div class="admin-dashboard">
-    {% if current_user.is_authenticated %}
     <div class="dashboard-header">
         <h1 class="text-center">Trang Quản Trị Hệ Thống</h1>
         <div class="user-greeting">
@@ -88,8 +88,7 @@
             </div>
         </div>
     </div>
-
-    {% else %}
+{% else %}
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">

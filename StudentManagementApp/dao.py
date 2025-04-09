@@ -27,11 +27,16 @@ def get_class_by_id_grade(id_grade):
 def get_class_by_id(id_class):
     return Class.query.filter(Class.id_class.__eq__(id_class)).first()
 
+# Phần quy định mới
+def get_regulation_value(regulation_name):
+    regulation = Regulation.query.filter_by(name_regulations=regulation_name).first()
+    return regulation.value_regulations if regulation else None
+
 def get_class_is_blank(id_grade):
     # Lấy tất cả lớp thuộc khối
     classes = Class.query.filter(Class.id_grade == id_grade).all()
     # Lọc lớp chưa đầy
-    return [c for c in classes if c.current_student < app.config['soluong']]
+    return [c for c in classes if c.current_student < get_regulation_value("Quy định số lượng học sinh trong 1 lớp")]
 
 # Hàm này Giang dùm kh, này quan trọng bên t
 # def get_class_is_blank():
@@ -53,10 +58,6 @@ def get_student_by_name(name, class_id=None):
     if class_id:
         query = query.filter(Student.id_class == class_id)
     return query.all()
-
-# Hàm này Giang dùm kh, này quan trọng bên t
-# def get_student_by_name(name):
-#     return Student.query.filter(Student.name.icontains(name)).all()
 
 
 def get_student_by_id(id):
@@ -94,7 +95,7 @@ def create_class_list():
     for g in grades:
         students = get_student_by_id_grade(g.id_grade)
         unassigned = [s for s in students if not s.id_class]
-        max_per_class = app.config['soluong']
+        max_per_class = get_regulation_value("Quy định số lượng học sinh trong 1 lớp")
 
         # Bước 1: Tính số lớp cần thiết
         required_classes = len(unassigned) // max_per_class
@@ -145,6 +146,8 @@ def create_class_list():
         "classes": get_class(),
         "unassigned_students": unassigned_students
     }
+
+
 
 
 # Phần Giang

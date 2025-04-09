@@ -229,8 +229,8 @@ if __name__ == '__main__':
         db.session.add_all([s1, s2, s3, s4, s5, s6, s7, s8])
         db.session.commit()
 
-        r1 = Regulation(name_regulations="Quy định số lượng học sinh trong 1 lớp", value_regulations=40)
-        r2 = Regulation(name_regulations="Quy định số tuổi nhỏ nhất của học sinh", value_regulations=15)
-        r3 = Regulation(name_regulations="Quy định số tuổi lớn nhất của học sinh", value_regulations=20)
+        r1 = Regulation(name_regulations="Quy định số lượng học sinh trong 1 lớp", value_regulations=42)
+        r2 = Regulation(name_regulations="Quy định số tuổi nhỏ nhất của học sinh", value_regulations=16)
+        r3 = Regulation(name_regulations="Quy định số tuổi lớn nhất của học sinh", value_regulations=21)
         db.session.add_all([r1,r2,r3])
         db.session.commit()

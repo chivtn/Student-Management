@@ -22,7 +22,7 @@ def create_fake_students():
             sex = random.choice([Sex.MALE, Sex.FEMALE])
 
             # Đảm bảo năm sinh hợp lệ (15-20 tuổi tính từ 2023)
-            birth_year = 2023 - random.randint(15, 20)
+            birth_year = 2025 - random.randint(15, 20)
             dob = fake.date_of_birth(minimum_age=15, maximum_age=20)
 
             address = fake.address()

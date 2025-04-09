@@ -52,6 +52,11 @@ def load_user(user_id):
     return dao.get_user_by_id(user_id)
 
 
+@app.context_processor
+def inject_regulations():
+    max_per_class = dao.get_regulation_value("Quy định số lượng học sinh trong 1 lớp")
+    return dict(max_per_class=max_per_class)
+
 # ✅ Phần Chi
 # ✅ Giao diện Thêm Học Sinh
 @app.route("/AddStudent")
@@ -83,8 +88,11 @@ def ThemHocSinh():
         except:
             err_msg = 'Bạn chưa nhập ngày sinh. Vui lòng thử lại!'
             return render_template('AddStudent.html', err_msg=err_msg)
-        if (app.config['nambatdau'] - birthdate.year) < app.config['mintuoi'] or (
-                app.config['nambatdau'] - birthdate.year) > app.config['maxtuoi']:
+
+        min_age = dao.get_regulation_value("Quy định số tuổi nhỏ nhất của học sinh")
+        max_age = dao.get_regulation_value("Quy định số tuổi lớn nhất của học sinh")
+        current_year = datetime.now().year  # Giả sử nambatdau là năm hiện tại
+        if (current_year - birthdate.year) < min_age or (current_year - birthdate.year) > max_age:
             err_msg = 'Ngày sinh không hợp lệ. Vui lòng thử lại!'
             return render_template('AddStudent.html', err_msg=err_msg)
 
@@ -203,7 +211,6 @@ def AdjustClass():
     return render_template('AdjustClass.html', classes=classes, grades=grades)
 
 
-# Route chuyển lớp
 @app.route('/change_class', methods=['POST'])
 def change_class():
     data = request.get_json()
@@ -216,37 +223,48 @@ def change_class():
     if not student or not new_class:
         return jsonify({"success": False, "message": "Học sinh hoặc lớp không tồn tại"}), 404
 
-    # Lấy lớp cũ của học sinh
-    old_class_id = student.id_class
-    old_class = Class.query.get(old_class_id) if old_class_id else None
+    # Lấy giá trị quy định mới nhất từ database
+    max_per_class = dao.get_regulation_value("Quy định số lượng học sinh trong 1 lớp")
 
-    # Kiểm tra lớp mới có đầy không (giả sử mỗi lớp tối đa 40 học sinh)
-    if new_class.current_student >= app.config['soluong']:  # Nơi cần sửa
+    # Kiểm tra lớp mới có đầy không
+    if new_class.current_student >= max_per_class:
         return jsonify({"success": False, "message": "Lớp đã đầy"}), 400
 
-    # Kiểm tra học sinh có cùng khối với lớp mới không
+    # Kiểm tra cùng khối
     if student.id_grade != new_class.id_grade:
         return jsonify({"success": False, "message": "Không cùng khối"}), 400
 
+    old_class_id = student.id_class
     try:
+        # Cập nhật lớp mới
         student.id_class = new_class.id_class
         db.session.commit()
 
-        # Lấy lại thông tin lớp cũ và mới sau khi commit
-        updated_old_class = Class.query.get(old_class_id) if old_class_id else None
-        updated_new_class = Class.query.get(new_class_id)
+        # Refresh thông tin lớp cũ và mới
+        db.session.refresh(new_class)
+        if old_class_id:
+            old_class = Class.query.get(old_class_id)
+            db.session.refresh(old_class)
+        else:
+            old_class = None
+
+        # ✅ Lấy giá trị quy định mới nhất
+        max_per_class = dao.get_regulation_value("Quy định số lượng học sinh trong 1 lớp")
 
         return jsonify({
             "success": True,
             "message": f"Đã chuyển {student.name} đến lớp {new_class.name_class}",
             "old_class": {
-                "id": updated_old_class.id_class if updated_old_class else None,
-                "current_student": updated_old_class.current_student if updated_old_class else 0
+                "id": old_class.id_class if old_class else None,
+                "name": old_class.name_class if old_class else None,
+                "current_student": old_class.current_student if old_class else 0
             },
             "new_class": {
                 "id": new_class.id_class,
+                "name": new_class.name_class,
                 "current_student": new_class.current_student
-            }
+            },
+            "max_per_class": max_per_class  # ✅ Thêm giá trị quy định vào response
         })
     except Exception as e:
         db.session.rollback()

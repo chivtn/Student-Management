@@ -6,8 +6,9 @@ from flask_login import LoginManager
 app = Flask(__name__)
 app.secret_key = 'GHFGH&*%^$^*(JHFGHF&Y*R%^$%$^&*TGYGJHFHGVJHGY'
 # Chi
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:01676831139Chi%40@localhost:3306/hocsinhdb?charset=utf8mb4"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/hocsinhdb?charset=utf8mb4"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
+# Bỏ i nha ấy mom, mà t sợ lỗi j nên ể tạm lại
 app.config['soluong']=40
 app.config['maxtuoi']=20
 app.config['mintuoi']=15

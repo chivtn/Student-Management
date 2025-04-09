@@ -50,23 +50,28 @@ class LogoutView(AuthenticatedUser):
         return redirect('/admin')
 
 class AdminIndex(AdminIndexView):
+    # def is_accessible(self):
+        # return current_user.is_authenticated and current_user.user_role == UserRoleEnum.ADMIN
     @expose('/')
     def index(self):
-        total_users = User.query.count()
-        total_subjects = Subject.query.count()
-        total_classes = Class.query.count()
-        total_teachers = User.query.filter_by(user_role=UserRoleEnum.TEACHER).count()
-
+        total_users = dao.count_users()
+        total_subjects = dao.count_subjects()
+        total_classes = dao.count_class()
+        total_teachers= dao.count_Teacher()
+        # total_teachers = User.query.filter_by(user_role=UserRoleEnum.TEACHER).count()
         return self.render('admin/index.html',
                            total_users=total_users,
                            total_subjects=total_subjects,
                            total_classes=total_classes,
                            total_teachers=total_teachers,
-
                            )
-admin = Admin(app=app, name='Quản lý học sinh', template_mode='bootstrap4', index_view=AdminIndex(name='Trang chủ'))
+    #
+    # def is_accessible(self):
+    #     return current_user.is_authenticated and current_user.user_role == UserRoleEnum.ADMIN
 
-admin._index_view = AdminIndex(name='Trang chủ')
+admin = Admin(app=app, name='Quản lý học sinh', template_mode='bootstrap4' , index_view=AdminIndex(name='Trang chủ'))
+
+# admin.add_view = AdminIndex(name='Trang chủ')
 
 admin.add_view(SubjectView(Subject, db.session, name='Quản lý môn học'))
 admin.add_view(StatsView(name='Thống kê báo cáo'))
