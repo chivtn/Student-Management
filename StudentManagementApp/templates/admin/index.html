@@ -1,0 +1,127 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Trang Quản Trị{% endblock %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+<div class="admin-dashboard">
+    <div class="dashboard-header">
+        <h1 class="text-center">Trang Quản Trị Hệ Thống</h1>
+        <div class="user-greeting">
+            <span class="welcome-text">Xin chào,</span>
+            <span class="username">{{ current_user.name }}</span>
+            <span class="welcome-emoji">👋</span>
+        </div>
+    </div>
+
+    {% if err_msg %}
+    <div class="alert alert-danger alert-dismissible fade show">
+        {{ err_msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <div class="stats-container">
+        <div class="stats-row">
+            <div class="stat-card bg-primary">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ total_users }}</div>
+                    <div class="stat-label">Tổng Người Dùng</div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-success">
+                <div class="stat-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ total_subjects }}</div>
+                    <div class="stat-label">Tổng Môn Học</div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ total_classes }}</div>
+                    <div class="stat-label">Tổng Lớp Học</div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-danger">
+                <div class="stat-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ total_teachers }}</div>
+                    <div class="stat-label">Giáo Viên</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="recent-activity">
+        <div class="activity-card">
+            <h3><i class="fas fa-history me-2"></i>Hoạt động gần đây</h3>
+            <div class="activity-list">
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-user-plus text-success"></i>
+                    </div>
+                    <div class="activity-content">
+                        <span class="activity-text">Người dùng mới đã đăng ký</span>
+                        <span class="activity-time">2 giờ trước</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-book text-primary"></i>
+                    </div>
+                    <div class="activity-content">
+                        <span class="activity-text">Môn học mới đã được thêm</span>
+                        <span class="activity-time">5 giờ trước</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1><i class="fas fa-lock me-2"></i>Đăng Nhập </h1>
+            <p>Vui lòng nhập thông tin đăng nhập</p>
+        </div>
+
+        <form method="post" action="/admin/login">
+            <div class="form-group">
+                <label for="username"><i class="fas fa-user me-2"></i>Tên đăng nhập</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Nhập tên đăng nhập">
+            </div>
+            <div class="form-group">
+                <label for="pwd"><i class="fas fa-key me-2"></i>Mật khẩu</label>
+                <input type="password" class="form-control" id="pwd" name="password" placeholder="Nhập mật khẩu">
+            </div>
+            <button type="submit" class="btn btn-primary btn-login">
+                <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/index.css') }}">
+{% endblock %}
+
+{% block extra_js %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}
+

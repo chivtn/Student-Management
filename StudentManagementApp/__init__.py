@@ -1,30 +1,33 @@
-#_init_.py
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
-db = SQLAlchemy()
-login = LoginManager()
+app = Flask(__name__)
+app.secret_key = 'GHFGH&*%^$^*(JHFGHF&Y*R%^$%$^&*TGYGJHFHGVJHGY'
 
-def create_app():
-    app = Flask(__name__)
-    app.secret_key = 'secret'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:askme@localhost/studentdb?charset=utf8mb4'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+app.config['soluong'] = 40
+app.config['maxtuoi'] = 20
+app.config['mintuoi'] = 15
+app.config['nambatdau'] = 2025
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:askme@localhost:3306/studentdb'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+login = LoginManager(app)
+login.login_view = 'login'
 
-    db.init_app(app)
-    login.init_app(app)
+from StudentManagementApp.models import User, Role
+app.jinja_env.globals['Role'] = Role
 
-    # ✅ Đưa vào trong create_app để tránh vòng lặp
-    from StudentManagementApp.models.user import User
+@login.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
-    @login.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
+# Đăng ký các Blueprint
+from StudentManagementApp.routes.teacher import teacher
+from StudentManagementApp.routes import auth
+from StudentManagementApp.routes.staff import staff
 
-    # import routes
-    from StudentManagementApp.routes.teacher import teacher
-    app.register_blueprint(teacher)
-
-    return app
+app.register_blueprint(staff)
+app.register_blueprint(teacher)
+#app.register_blueprint(admin)

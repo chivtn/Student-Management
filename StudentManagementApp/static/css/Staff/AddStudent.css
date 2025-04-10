@@ -1,0 +1,87 @@
+/* Trong file AddStudent.css */
+.table-responsive {
+    max-height: 600px; /* Giới hạn chiều cao */
+    overflow-y: auto; /* Cuộn dọc nếu cần */
+}
+
+.table th, .table td {
+    white-space: nowrap; /* Ngăn ngắt dòng */
+    overflow: hidden; /* Ẩn nội dung tràn */
+    text-overflow: ellipsis; /* Hiển thị dấu ... khi tràn */
+    max-width: 200px; /* Đặt chiều rộng tối đa cho các cột */
+}
+
+/* Hoặc xác định chiều rộng cụ thể cho từng cột */
+th:nth-child(1), td:nth-child(1) { width: 5%; } /* STT */
+th:nth-child(2), td:nth-child(2) { width: 20%; } /* Họ tên */
+th:nth-child(3), td:nth-child(3) { width: 10%; } /* Giới tính */
+/* ... Tùy chỉnh các cột còn lại */
+
+/*
+*/
+/* Tùy chỉnh card header */
+/* Trong AddStudent.css */
+.form-card, .list-card .card-header {
+    background-color: rgb(30, 144, 255); /* Dodger Blue */
+    color: white;
+    border-bottom: 2px solid rgb(30, 144, 255); /* Viền cùng màu */
+}
+
+/* Tùy chỉnh nút Lưu (btn-success) */
+.btn-success {
+    background-color: rgb(30, 144, 255); /* Dodger Blue */
+    border-color: rgb(30, 144, 255);
+}
+.btn-success:hover {
+    background-color: rgb(0, 191, 255); /* Deep Blue */
+    border-color: rgb(0, 191, 255);
+}
+
+/* Tùy chỉnh nút Xóa (btn-danger) */
+.btn-danger {
+    background-color: rgb(173, 216, 230); /* Light Blue */
+    border-color: rgb(173, 216, 230);
+    color: rgb(0, 0, 128); /* Navy Blue */
+}
+.btn-danger:hover {
+    background-color: rgb(135, 206, 235); /* Sky Blue */
+    color: white;
+}
+
+/* Tùy chỉnh bảng */
+.table thead th {
+    background-color: rgb(0, 191, 255); /* Deep Blue */
+    color: white;
+    border-color: rgb(30, 144, 255); /* Dodger Blue */
+}
+.table-hover tbody tr:hover {
+    background-color: rgb(173, 216, 230); /* Light Blue */
+}
+
+/* Tùy chỉnh select và input */
+.form-select, .form-control {
+    border-color: rgb(30, 144, 255); /* Dodger Blue */
+}
+.form-select:focus, .form-control:focus {
+    border-color: rgb(0, 191, 255); /* Deep Blue */
+    box-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
+}
+
+/* Tùy chỉnh alert */
+.alert-success {
+    background-color: rgb(173, 216, 230); /* Light Blue */
+    color: rgb(0, 0, 128); /* Navy Blue */
+}
+.alert-danger {
+    background-color: rgb(135, 206, 235); /* Sky Blue */
+    color: white;
+}
+
+/* Tùy chỉnh input tìm kiếm */
+#searchInput {
+    border-color: rgb(30, 144, 255); /* Dodger Blue */
+}
+#searchInput:focus {
+    border-color: rgb(0, 191, 255); /* Deep Blue */
+    box-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
+}

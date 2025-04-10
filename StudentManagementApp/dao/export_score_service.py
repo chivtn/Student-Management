@@ -1,4 +1,4 @@
-from StudentManagementApp import db
+#export_score_service.py
 from StudentManagementApp.models import Teacher, Classroom, Student
 from io import BytesIO
 from openpyxl import Workbook
@@ -6,9 +6,8 @@ from openpyxl.styles import Alignment, Border, Side, Font
 from openpyxl.utils import get_column_letter
 from StudentManagementApp.dao.score_service import calculate_avg_score
 
-def generate_avg_score_excel(class_id: int, year: str, semester: int = None):
-    teacher_id = 2
-    teacher = Teacher.query.get(teacher_id)
+#hiển thị thêm tên gv
+def generate_avg_score_excel(class_id: int, year: str, semester: int = None, teacher=None):
     subject_name = teacher.subject.name if teacher else "..."
     classroom = Classroom.query.get(class_id)
     class_name = classroom.name if classroom else "..."
@@ -70,7 +69,7 @@ def populate_score_data(ws, header_row, students, academic_year, semester):
     center_align = Alignment(horizontal="center")
 
     for index, student in enumerate(students, 1):
-        row = [index, student.full_name]
+        row = [index, student.name]
         if semester:
             avg = calculate_avg_score(student.id, academic_year, semester)
             row.append(round(avg, 2) if avg is not None else "")

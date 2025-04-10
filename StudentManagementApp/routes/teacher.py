@@ -1,26 +1,26 @@
-# routes/teacher.py
-from flask import Blueprint, render_template, request, send_file, redirect, url_for, flash, render_template_string
+#teacher.py
+from flask import Blueprint, render_template, request, send_file, redirect, url_for, flash
+from flask_login import current_user, login_required
 from StudentManagementApp import db
 from StudentManagementApp.models import Teacher, Classroom, Student, Subject, Semester
 from StudentManagementApp.dao import score_service, export_score_service
-from flask import send_file, request
 
 teacher = Blueprint('teacher', __name__, url_prefix='/teacher')
 
 @teacher.route('/')
+@login_required
 def index():
-    teacher_id = 2  # giả định
-    teacher = Teacher.query.get(teacher_id)
+    teacher = Teacher.query.filter_by(id=current_user.id).first()
     return render_template('teacher/index.html', teacher=teacher)
 
 @teacher.route('/avg_scores')
+@login_required
 def view_avg_scores():
-    teacher_id = 2  # sẽ thay bằng current_user.id sau
     selected_class = request.args.get('class_id', type=int)
     selected_year = request.args.get('year', default='2024-2025')
     selected_semester = request.args.get('semester', type=int)
 
-    teacher_obj = Teacher.query.get(teacher_id)
+    teacher_obj = Teacher.query.filter_by(id=current_user.id).first()
     classes = teacher_obj.classrooms
     years = ['2023-2024', '2024-2025']
     semesters = Semester.query.all()
@@ -33,7 +33,7 @@ def view_avg_scores():
             if selected_semester:
                 avg = score_service.calculate_avg_score(student.id, selected_year, selected_semester)
                 scores_list.append({
-                    "full_name": student.full_name,
+                    "name": student.name,
                     "avg_score": round(avg, 2) if avg is not None else None
                 })
             else:
@@ -41,7 +41,7 @@ def view_avg_scores():
                 avg2 = score_service.calculate_avg_score(student.id, selected_year, 2)
                 avg_year = round((avg1 + avg2) / 2, 2) if avg1 is not None and avg2 is not None else None
                 scores_list.append({
-                    "full_name": student.full_name,
+                    "name": student.name,
                     "avg_score_sem1": round(avg1, 2) if avg1 is not None else None,
                     "avg_score_sem2": round(avg2, 2) if avg2 is not None else None,
                     "avg_score_year": avg_year
@@ -59,31 +59,34 @@ def view_avg_scores():
     )
 
 @teacher.route('/export_avg_scores')
+@login_required
 def export_avg_scores():
     class_id = request.args.get('class_id', type=int)
     year = request.args.get('year')
     semester = request.args.get('semester', type=int)
+    teacher = Teacher.query.filter_by(id=current_user.id).first()
 
-    excel_file, filename = export_score_service.generate_avg_score_excel(class_id, year, semester)
+    excel_file, filename = export_score_service.generate_avg_score_excel(class_id, year, semester, teacher=teacher)
     return send_file(excel_file, download_name=filename, as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 @teacher.route('/my_classes')
+@login_required
 def view_classes():
-    teacher_id = 2  # thay bằng current_user.id khi có đăng nhập
-    teacher_obj = Teacher.query.get(teacher_id)
+    teacher_obj = Teacher.query.filter_by(id=current_user.id).first()
     classrooms = teacher_obj.classrooms
     return render_template('teacher/my_classes.html', classrooms=classrooms)
 
 @teacher.route('/class/<int:class_id>')
+@login_required
 def view_class_detail(class_id):
     classroom = Classroom.query.get_or_404(class_id)
     students = Student.query.filter_by(classroom_id=class_id).all()
     return render_template('teacher/class_detail.html', classroom=classroom, students=students)
 
 @teacher.route('/select_for_grading', methods=['GET', 'POST'])
+@login_required
 def select_for_grading():
-    teacher_id = 2  # giả định hoặc dùng current_user.id khi triển khai thực tế
-    teacher_obj = Teacher.query.get_or_404(teacher_id)
+    teacher_obj = Teacher.query.filter_by(id=current_user.id).first()
     classes = teacher_obj.classrooms
     semesters = Semester.query.all()
 
@@ -104,13 +107,13 @@ def select_for_grading():
 
         if 'save_scores' in request.form:
             score_service.store_scores(
-                request.form, students, academic_year, semester_id, teacher_obj.subject.id
+                request.form, students, academic_year, semester_id, subject_id
             )
             db.session.commit()
 
         elif 'draft' in request.form:
             score_service.save_draft_scores(
-                request.form, students, academic_year, semester_id, teacher_obj.subject.id
+                request.form, students, academic_year, semester_id, subject_id
             )
             db.session.commit()
 
