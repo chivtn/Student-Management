@@ -350,34 +350,52 @@ def StatisticsScore():
         }
     return stu
 
-
 @app.route("/api/changeRule", methods=['POST'])
 def ChangeRule():
-    quantity = int(request.json.get('quantity'))
-    min_age = int(request.json.get('min_age'))
-    max_age = int(request.json.get('max_age'))
+    try:
+        quantity = int(request.json.get('quantity'))
+        min_age = int(request.json.get('min_age'))
+        max_age = int(request.json.get('max_age'))
 
-    if quantity <= 0 or min_age <= 0 or max_age <= 0:
-        return jsonify({'status': 200, 'content': 'Thông tin không hợp lệ. Vui lòng kiểm tra lại!'})
+        if quantity <= 0 or min_age <= 0 or max_age <= 0:
+            return jsonify({'status': 400, 'content': 'Thông tin không hợp lệ. Vui lòng kiểm tra lại!'})
 
-    if min_age >= max_age:
-        return jsonify({'status': 200, 'content': 'Tuổi lớn nhất phải lớn hơn tuổi nhỏ nhất. Vui lòng kiểm tra lại!'})
+        if min_age >= max_age:
+            return jsonify({'status': 400, 'content': 'Tuổi lớn nhất phải lớn hơn tuổi nhỏ nhất. Vui lòng kiểm tra lại!'})
 
-    classes = dao.get_class()
-    max_student = max(len(dao.get_student_by_class(c.id_class)) for c in classes)
+        classes = dao.get_class()
+        max_student = max(len(dao.get_student_by_class(c.id_class)) for c in classes)
 
-    if quantity < max_student:
+        if quantity < max_student:
+            return jsonify({
+                'status': 400,
+                'content': f'Sĩ số tối đa phải lớn hơn hoặc bằng {max_student}. Vui lòng kiểm tra lại!'
+            })
+
+        # ✅ Cập nhật DB
+        update_regulation("Quy định số lượng học sinh trong 1 lớp", quantity)
+        update_regulation("Quy định số tuổi nhỏ nhất của học sinh", min_age)
+        update_regulation("Quy định số tuổi lớn nhất của học sinh", max_age)
+
+        # ✅ Cập nhật lại app.config
+        from StudentManagementApp import app
+        app.config['soluong'] = quantity
+        app.config['mintuoi'] = min_age
+        app.config['maxtuoi'] = max_age
+
+        # ✅ Trả về kết quả để frontend cập nhật giao diện
         return jsonify({
             'status': 200,
-            'content': f'Sĩ số tối đa phải lớn hơn {max_student}. Vui lòng kiểm tra lại!'
+            'content': 'Thay đổi quy định thành công!',
+            'quantity': quantity,
+            'min_age': min_age,
+            'max_age': max_age
         })
 
-    # ✅ Cập nhật xuống DB
-    update_regulation("Quy định số lượng học sinh trong 1 lớp", quantity)
-    update_regulation("Quy định số tuổi nhỏ nhất của học sinh", min_age)
-    update_regulation("Quy định số tuổi lớn nhất của học sinh", max_age)
+    except Exception as e:
+        print("❌ Lỗi khi cập nhật quy định:", e)
+        return jsonify({'status': 500, 'content': 'Đã xảy ra lỗi nội bộ. Vui lòng thử lại sau!'})
 
-    return jsonify({'status': 500, 'content': 'Thành công!'})
 
 if __name__ == '__main__':
     app.run(debug=True)
