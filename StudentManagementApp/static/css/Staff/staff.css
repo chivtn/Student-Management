@@ -1,0 +1,21 @@
+        .navbar-custom {
+            background-color: #004085; /* xanh đậm */
+        }
+
+        .navbar-custom .nav-link,
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-item .nav-link i {
+            color: white;
+        }
+
+        .navbar-custom .nav-link:hover {
+            color: #ffc107; /* vàng nhạt khi hover */
+        }
+
+        .navbar-custom .nav-item {
+            margin-right: 10px;
+        }
+
+        .navbar-brand i {
+            margin-right: 5px;
+        }
