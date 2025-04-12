@@ -44,6 +44,8 @@ class SubjectView(Authenticated_Admin):
     edit_modal = True
     can_export = True
 
+    list_template = 'admin/subject_view.html'
+
 
 class LogoutView(AuthenticatedUser):
     @expose("/")

@@ -71,7 +71,7 @@ def ChangeRule():
     classes = staff_service.get_all_classrooms()
     max = 0
     for c in classes:
-        student = staff_service.get_student_by_class(c.id_class)
+        student = staff_service.get_student_by_class(c.id)
         if max < len(student):
             max = len(student)
     if quantity < max:

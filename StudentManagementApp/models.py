@@ -105,6 +105,7 @@ class Student(db.Model):
     classroom_id = Column(Integer, ForeignKey('classroom.id'), nullable=True)
     grade_id = Column(Integer, ForeignKey('gradelevel.id'), nullable=False)
 
+    gradelevel = relationship("GradeLevel", backref="students", lazy = True)
     score_sheets = relationship('ScoreSheet', backref='student', lazy=True)
     draft_scores = relationship('DraftScore', backref='student', lazy=True)
 

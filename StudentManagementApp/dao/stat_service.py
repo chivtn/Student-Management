@@ -4,49 +4,48 @@ import hashlib
 from sqlalchemy import func
 from StudentManagementApp.models import *
 from StudentManagementApp import app, db
+from StudentManagementApp.dao import staff_service as dao
 
 # --- THỐNG KÊ ĐIỂM MÔN HỌC ---
 def statistics_subject(classroom_id, subject_id, semester_id):
-    students = Student.query.filter_by(classroom_id=classroom_id).all()
+    students = dao.get_student_by_class(classroom_id)
     scores = {}
 
     for student in students:
-        scores[student.id] = {
-            'id_student': student.id,
-            'score': 0,
-        }
+        scores[student.id] = {"id_student": student.id, "score": 0}
 
-    def query_score(score_type_label):
+    def query_scores(score_type):
         return db.session.query(
-            ScoreDetail.score_sheet_id,
+            ScoreSheet.student_id,
             func.sum(ScoreDetail.value),
             func.count(ScoreDetail.value)
-        ).join(ScoreSheet, ScoreSheet.id == ScoreDetail.score_sheet_id) \
-            .filter(
+        ).join(ScoreDetail, ScoreSheet.id == ScoreDetail.score_sheet_id) \
+        .filter(
             ScoreSheet.classroom_id == classroom_id,
             ScoreSheet.subject_id == subject_id,
             ScoreSheet.semester_id == semester_id,
-            ScoreDetail.type == score_type_label
-        ).group_by(ScoreDetail.score_sheet_id).all()
+            ScoreDetail.type == score_type
+        ).group_by(ScoreSheet.student_id).all()
 
-    test_15m = query_score(ScoreType.FIFTEEN_MIN)
-    test_45m = query_score(ScoreType.ONE_PERIOD)
-    test_final = query_score(ScoreType.FINAL)
+    fifteen_scores = query_scores(ScoreType.FIFTEEN_MIN)
+    one_period_scores = query_scores(ScoreType.ONE_PERIOD)
+    final_scores = query_scores(ScoreType.FINAL)
 
-    for i, (student_id, a_sum, a_count) in enumerate(test_15m):
+    for sid, a_sum, a_count in fifteen_scores:
         b_sum, b_count = (0, 0)
         c_sum, c_count = (0, 0)
 
-        for sid, s, c in test_45m:
-            if sid == student_id:
-                b_sum, b_count = s, c
-        for sid, s, c in test_final:
-            if sid == student_id:
-                c_sum, c_count = s, c
+        for sid_b, s_b, c_b in one_period_scores:
+            if sid_b == sid:
+                b_sum, b_count = s_b, c_b
+        for sid_c, s_c, c_c in final_scores:
+            if sid_c == sid:
+                c_sum, c_count = s_c, c_c
 
-        if a_count + b_count*2 + c_count*3 > 0:
-            final_score = (a_sum + b_sum*2 + c_sum*3) / (a_count + b_count*2 + c_count*3)
-            scores[student_id]['score'] = round(final_score, 1)
+        total_weight = a_count + b_count * 2 + c_count * 3
+        if total_weight > 0:
+            avg = (a_sum + b_sum * 2 + c_sum * 3) / total_weight
+            scores[sid]['score'] = round(avg, 1)
 
     return scores
 

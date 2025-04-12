@@ -1,74 +1,92 @@
-#staff.py
-from flask import render_template, request, redirect, session, jsonify
-from StudentManagementApp import app, login, db
+from flask import render_template, request, redirect, session, jsonify, Blueprint
+from flask_login import login_user, current_user, logout_user, login_required
+from StudentManagementApp import app, db, login
 from StudentManagementApp.models import *
 from StudentManagementApp.dao import staff_service as dao
-from flask_login import login_user, current_user, logout_user, login_required
-import string
 from datetime import datetime
-from flask import Blueprint
 
 staff = Blueprint('staff', __name__, url_prefix='/staff')
-
 
 @staff.route('/')
 @login_required
 def index():
-    staff = Staff.query.filter_by(id=current_user.id).first()
-    return render_template('staff/index.html', staff=staff)
+    staff_info = Staff.query.filter_by(id=current_user.id).first()
+    return render_template('staff/index.html', staff=staff_info)
 
-@app.route("/AddStudent")
+@staff.route("/AddStudent")
 def AddStudent():
     students = dao.get_all_students()
-    return render_template('staff/AddStudent.html', students=students)
+    grades = dao.get_grade()
+    return render_template('staff/AddStudent.html', students=students, grades=grades)
 
 
-@app.route("/ThemHocSinh", methods=['POST'])
+@staff.route("/ThemHocSinh", methods=['POST'])
 def ThemHocSinh():
     err_msg = ''
-    if request.method.__eq__('POST'):
-        fullname = request.form.get('fullname')
-        gender = request.form.get('sex')
-        DoB = request.form.get('DoB')
-        address = str(request.form.get('address'))
-        phone = request.form.get('phonenumber')
-        email = request.form.get('email')
-        grade = request.form.get('grade')
-        substring = email[(len(email) - 10):]
-        if len(phone) != 10:
-            err_msg = 'Số điện thoại sai. Vui lòng nhập lại!'
-            return render_template('staff/AddStudent.html', err_msg=err_msg)
-        if not substring.__eq__('@gmail.com'):
-            err_msg = 'Email sai. Vui lòng nhập lại!'
-            return render_template('staff/AddStudent.html', err_msg=err_msg)
-        try:
-            birthdate = datetime.strptime(DoB, '%Y-%m-%d')
-        except:
-            err_msg = 'Bạn chưa nhập ngày sinh. Vui lòng thử lại!'
-            return render_template('staff/AddStudent.html', err_msg=err_msg)
-        if (app.config['nambatdau'] - birthdate.year) < app.config['mintuoi'] or (
-                app.config['nambatdau'] - birthdate.year) > app.config['maxtuoi']:
-            err_msg = 'Ngày sinh không hợp lệ. Vui lòng thử lại!'
-            return render_template('staff/AddStudent.html', err_msg=err_msg)
+    fullname = request.form.get('fullname')
+    gender = request.form.get('sex')
+    DoB = request.form.get('DoB')
+    address = request.form.get('address')
+    phone = request.form.get('phonenumber')
+    email = request.form.get('email')
+    grade_id = request.form.get('grade')
+    grades = dao.get_grade()  # luôn load danh sách khối
 
-        student = Student(name=fullname, gender=Gender[gender], birth_date=birthdate, address=address, phone=phone,
-                          email=email, grade_id=grade)
+    # Kiểm tra số điện thoại
+    if not phone or len(phone) != 10 or not phone.isdigit():
+        err_msg = 'Số điện thoại sai. Vui lòng nhập lại!'
+        return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
+
+    # Kiểm tra email
+    if not email.endswith('@gmail.com'):
+        err_msg = 'Email sai. Vui lòng nhập lại!'
+        return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
+
+    # Kiểm tra ngày sinh
+    try:
+        birth_date = datetime.strptime(DoB, '%Y-%m-%d')
+    except:
+        err_msg = 'Bạn chưa nhập ngày sinh. Vui lòng thử lại!'
+        return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
+
+    # Kiểm tra độ tuổi theo quy định
+    current_year = datetime.now().year
+    min_age = dao.get_regulation_value("min_age")
+    max_age = dao.get_regulation_value("max_age")
+    age = current_year - birth_date.year
+
+    if age < min_age or age > max_age:
+        err_msg = f'Ngày sinh không hợp lệ. Tuổi phải từ {min_age} đến {max_age}.'
+        return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
+
+    # Thêm học sinh
+    try:
+        student = Student(
+            name=fullname,
+            gender=Gender[gender],  # gender là string: "MALE" hoặc "FEMALE"
+            birth_date=birth_date,
+            address=address,
+            phone=phone,
+            email=email,
+            grade_id=int(grade_id)
+        )
         db.session.add(student)
         db.session.commit()
-        err_msg = 'Lưu thành công'
-        return render_template('staff/AddStudent.html', err_msg=err_msg)
+        return render_template('staff/AddStudent.html', err_msg='Lưu thành công', grades=grades)
+    except Exception as e:
+        db.session.rollback()
+        err_msg = f"Lỗi khi lưu học sinh: {str(e)}"
+        return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
 
 
-@app.route("/api/searchStudentAddStu", methods=['POST'])
+@staff.route("/api/searchStudentAddStu", methods=['POST'])
 def search_student_add_stu():
     name = request.json.get('searchstudentAddStu')
     grade_id = request.json.get('grade_id')
-
-    query = Student.query.filter(Student.name.icontains(name))
+    students = dao.search_students_by_name(name)
     if grade_id:
-        query = query.filter(Student.grade_id == grade_id)
+        students = [s for s in students if str(s.grade_id) == str(grade_id)]
 
-    students = query.all()
     result = {0: {"quantity": len(students)}}
     for idx, student in enumerate(students, 1):
         result[idx] = {
@@ -84,26 +102,23 @@ def search_student_add_stu():
         }
     return jsonify(result)
 
-
-@app.route('/api/getStudents')
+@staff.route('/api/getStudents')
 def get_students_api():
     students = dao.get_all_students()
-    students_data = []
-    for student in students:
-        students_data.append({
-            "id": student.id,
-            "name": student.name,
-            "sex": "Nam" if student.gender == Gender.MALE else "Nữ",
-            "DoB": student.birth_date.strftime("%d/%m/%Y"),
-            "address": student.address,
-            "email": student.email,
-            "phonenumber": student.phone,
-            "grade": student.gradelevel.name.value
-        })
-    return jsonify(students_data)
+    return jsonify([
+        {
+            "id": s.id,
+            "name": s.name,
+            "sex": "Nam" if s.gender == Gender.MALE else "Nữ",
+            "DoB": s.birth_date.strftime("%d/%m/%Y"),
+            "address": s.address,
+            "email": s.email,
+            "phonenumber": s.phone,
+            "grade": s.gradelevel.name.value
+        } for s in students
+    ])
 
-
-@app.route('/api/deleteStudent/<int:student_id>', methods=['DELETE'])
+@staff.route('/api/deleteStudent/<int:student_id>', methods=['DELETE'])
 def delete_student(student_id):
     try:
         student = dao.get_student_by_id(student_id)
@@ -116,111 +131,97 @@ def delete_student(student_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-
-# ✅ Giao diện Lập Danh Sách Lớp
-@app.route("/CreateClassList")
+@staff.route("/CreateClassList")
 def CreateClassList():
     result = dao.create_class_list()
-    classes = result["classes"]
-    unassigned_students = result["unassigned_students"]
-    grades = dao.get_grade()
-
     return render_template('staff/CreateClassList.html',
-                           classes=classes,
-                           unassigned_10=unassigned_students[1],
-                           unassigned_11=unassigned_students[2],
-                           unassigned_12=unassigned_students[3],
-                           grades=grades)
+                           classes=result["classes"],
+                           unassigned_10=result["unassigned_students"].get(1, []),
+                           unassigned_11=result["unassigned_students"].get(2, []),
+                           unassigned_12=result["unassigned_students"].get(3, []),
+                           grades=dao.get_grade())
 
-
-@app.route('/api/printClass', methods=['POST'])
+@staff.route('/api/printClass', methods=['POST'])
 def PrintClass():
     id_class = request.json.get('id_class')
     classroom = dao.get_classroom_by_id(id_class)
     students = dao.get_student_by_class(id_class)
-    stu = {}
 
-    stu[0] = {
-        "id": classroom.id,
-        "class": classroom.name,
-        "quantity": len(students)
-    }
-
-    for i in range(1, len(students) + 1):
-        stu[i] = {
-            "name": students[i - 1].name,
-            "sex": students[i - 1].gender.value,
-            "DoB": students[i - 1].birth_date.strftime("%d/%m/%Y"),
-            "address": students[i - 1].address
+    result = {0: {"id": classroom.id, "class": classroom.name, "quantity": len(students)}}
+    for i, student in enumerate(students, 1):
+        result[i] = {
+            "name": student.name,
+            "sex": student.gender.value,
+            "DoB": student.birth_date.strftime("%d/%m/%Y"),
+            "address": student.address
         }
+    return jsonify(result)
 
-    #return stu
-    return jsonify(stu)
-
-
-# ✅ Giao diện Chuyển Lớp cho học sinh
-@app.route('/AdjustClass')
+@staff.route("/AdjustClass")
 def AdjustClass():
-    classes = dao.get_all_classrooms()
-    grades = dao.get_grade()
-    return render_template('staff/AdjustClass.html', classes=classes, grades=grades)
+   # return render_template("staff/AdjustClass.html", classes=dao.get_all_classrooms(), grades=dao.get_grade())
+    return render_template("staff/AdjustClass.html",
+                           classes=dao.get_all_classrooms(),  # thêm dòng này nếu thiếu
+                           grades=dao.get_grade(),
+                           max_per_class=dao.get_regulation_value("max_class_size"))
 
 
-@app.route('/change_class', methods=['POST'])
+@staff.route('/change_class', methods=['POST'])
 def change_class():
     data = request.get_json()
     student_id = data.get('student_id')
     new_class_id = data.get('new_class_id')
 
-    student = Student.query.get(student_id)
-    new_class = Classroom.query.get(new_class_id)
+    student = dao.get_student_by_id(student_id)
+    new_class = dao.get_classroom_by_id(new_class_id)
 
     if not student or not new_class:
         return jsonify({"success": False, "message": "Học sinh hoặc lớp không tồn tại"}), 404
 
-    if new_class.current_student >= app.config['soluong']:
+    max_per_class = dao.get_regulation_value("max_class_size")
+
+    if new_class.current_student >= max_per_class:
         return jsonify({"success": False, "message": "Lớp đã đầy"}), 400
 
     if student.grade_id != new_class.gradelevel_id:
         return jsonify({"success": False, "message": "Không cùng khối"}), 400
 
     try:
+        old_class = dao.get_classroom_by_id(student.classroom_id) if student.classroom_id else None
         student.classroom_id = new_class.id
         db.session.commit()
 
         return jsonify({
             "success": True,
             "message": f"Đã chuyển {student.name} đến lớp {new_class.name}",
+            "old_class": {
+                "id": old_class.id if old_class else None,
+                "name": old_class.name if old_class else None,
+                "current_student": old_class.current_student if old_class else 0
+            },
             "new_class": {
                 "id": new_class.id,
+                "name": new_class.name,
                 "current_student": new_class.current_student
-            }
+            },
+            "max_per_class": max_per_class
         })
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": str(e)}), 500
 
-
-@app.route('/api/getClassesByGrade/<int:grade_id>')
+@staff.route('/api/getClassesByGrade/<int:grade_id>')
 def get_classes_by_grade(grade_id):
-    classes = Classroom.query.filter_by(gradelevel_id=grade_id).all()
-    return jsonify([{
-        'id_class': c.id,
-        'name_class': c.name
-    } for c in classes])
+    classes = dao.get_classrooms_by_gradelevel(grade_id)
+    return jsonify([{'id_class': c.id, 'name_class': c.name} for c in classes])
 
-
-@app.route("/api/searchStudent", methods=['POST'])
+@staff.route("/api/searchStudent", methods=['POST'])
 def search_student():
     data = request.get_json()
     name = data.get('searchstudent')
     class_id = data.get('class_id')
+    students = dao.search_students_by_name(name, classroom_id=class_id)
 
-    query = Student.query.filter(Student.name.ilike(f"%{name}%"))
-    if class_id:
-        query = query.filter(Student.classroom_id == class_id)
-
-    students = query.all()
     result = {0: {"quantity": len(students)}}
     for idx, student in enumerate(students, 1):
         result[idx] = {

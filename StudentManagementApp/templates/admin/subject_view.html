@@ -1,0 +1,29 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2><i class="fas fa-book me-2"></i>Danh sách môn học</h2>
+    <table class="table table-bordered table-hover mt-3">
+        <thead class="table-dark text-center">
+            <tr>
+                <th>STT</th>
+                <th>ID</th>
+                <th>Tên môn học</th>
+            </tr>
+        </thead>
+        <tbody class="text-center">
+            {% for row in data %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.id }}</td>
+                <td>{{ row.name }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3" class="text-center">Không có dữ liệu</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

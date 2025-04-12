@@ -8,16 +8,16 @@
         <!-- Form Column -->
         <div class="col-md-4">
             <div class="card h-100">
-                <div class="card-header form-card">
-                    <h3 class="mb-0"><i class="fas fa-user-graduate me-2"></i>HỒ SƠ HỌC SINH</h3>
+                <div class="card-header form-card bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-graduate me-2"></i>HỒ SƠ HỌC SINH</h5>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="/ThemHocSinh">
+                    <form method="post" action="{{ url_for('staff.ThemHocSinh') }}">
                         {% if err_msg == "Lưu thành công" %}
-                       <div class="alert alert-success">{{ err_msg }}</div>
-                       {% elif err_msg %}
-                       <div class="alert alert-danger">{{ err_msg }}</div>
-                       {% endif %}
+                        <div class="alert alert-success">{{ err_msg }}</div>
+                        {% elif err_msg %}
+                        <div class="alert alert-danger">{{ err_msg }}</div>
+                        {% endif %}
 
                         <!-- Row 1 -->
                         <div class="row mb-3">
@@ -27,10 +27,10 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label"><i class="fas fa-venus-mars me-2"></i>Giới tính*</label>
-                                <select id="sex" name="sex" class="form-select">
+                                <select id="sex" name="sex" class="form-select" required>
                                     <option value="" selected disabled>---</option>
-                                    <option value="1">Nam</option>
-                                    <option value="2">Nữ</option>
+                                    <option value="MALE">Nam</option>
+                                    <option value="FEMALE">Nữ</option>
                                 </select>
                             </div>
                         </div>
@@ -51,11 +51,13 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label"><i class="fas fa-envelope me-2"></i>Email*</label>
-                                <input type="email" class="form-control" placeholder="abc@gmail.com" id="email" name="email" required>
+                                <input type="email" class="form-control" placeholder="abc@gmail.com" id="email"
+                                       name="email" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label"><i class="fas fa-phone-alt me-2"></i>Số điện thoại</label>
-                                <input type="tel" class="form-control" placeholder="0123456789" id="phonenumber" name="phonenumber">
+                                <input type="tel" class="form-control" placeholder="0123456789" id="phonenumber"
+                                       name="phonenumber">
                             </div>
                         </div>
 
@@ -65,9 +67,9 @@
                                 <label class="form-label"><i class="fas fa-layer-group me-2"></i>Khối*</label>
                                 <select id="grade" name="grade" class="form-select" required>
                                     <option value="" selected disabled>---</option>
-                                    <option value="1">Khối 10</option>
-                                    <option value="2">Khối 11</option>
-                                    <option value="3">Khối 12</option>
+                                    {% for g in grades %}
+                                    <option value="{{ g.id }}">Khối {{ g.name.value }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>
@@ -91,18 +93,28 @@
             <div class="card h-100 list-card">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h3 class="mb-0"><i class="fas fa-list-ul me-2"></i>DANH SÁCH HỌC SINH</h3>
+                        <h5 class="mb-0"><i class="fas fa-list-ul me-2"></i>DANH SÁCH HỌC SINH</h5>
                         <div class="d-flex align-items-center gap-3">
-                            <select class="form-select form-select-sm bg-light text-dark border-secondary" id="filterGradeAdd" onchange="loadStudentsByGrade()">
-                                <option value="">📚 Tất cả khối</option>
-                                <option value="1">🎓 Khối 10</option>
-                                <option value="2">🎓 Khối 11</option>
-                                <option value="3">🎓 Khối 12</option>
-                            </select>
-                            <div class="input-group" style="width: 250px;">
-                                <input type="text" class="form-control bg-light text-dark border-secondary"
-                                       id="searchInput" placeholder="Tìm kiếm..."
-                                       onkeyup="searchStudentAddStu()">
+                            <div class="flex-shrink-0">
+                                <select class="form-select form-select-sm bg-light text-dark border-secondary"
+                                        id="filterGradeAdd" onchange="showAllStudents()">
+                                    <option value="">📚 Tất cả khối</option>
+                                    {% for g in grades %}
+                                    <option value="{{ g.id }}">🎓 Khối {{ g.name.value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="flex-grow-1" style="min-width: 300px;">
+                                <div class="input-group rounded shadow-sm" style="width: 400px;">
+                                    <input type="text" class="form-control bg-light text-dark border-secondary"
+                                           id="searchInput" placeholder="Tìm kiếm...">
+                                    <button class="btn btn-primary" onclick="handleSearch()">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                    <button class="btn btn-info" onclick="showAllStudents()">
+                                        <i class="fas fa-list"></i> Xem Danh Sách
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -111,20 +123,20 @@
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead class="thead-light">
-                                <tr>
-                                    <th style="width: 5%">STT</th>
-                                    <th style="width: 20%">Họ tên</th>
-                                    <th style="width: 10%">Giới tính</th>
-                                    <th style="width: 12%">Ngày sinh</th>
-                                    <th style="width: 18%">Địa chỉ</th>
-                                    <th style="width: 15%">Email</th>
-                                    <th style="width: 12%">SĐT</th>
-                                    <th style="width: 8%">Khối</th>
-                                    <th style="width: 10%">Thao tác</th>
-                                </tr>
+                            <tr>
+                                <th style="width: 5%">STT</th>
+                                <th style="width: 20%">Họ tên</th>
+                                <th style="width: 10%">Giới tính</th>
+                                <th style="width: 12%">Ngày sinh</th>
+                                <th style="width: 18%">Địa chỉ</th>
+                                <th style="width: 15%">Email</th>
+                                <th style="width: 12%">SĐT</th>
+                                <th style="width: 8%">Khối</th>
+                                <th style="width: 10%">Thao tác</th>
+                            </tr>
                             </thead>
                             <tbody id="list-student"></tbody>
-                            <tbody id="search-results" style="display: none;"></tbody> <!-- Kết quả tìm kiếm -->
+                            <tbody id="search-results" style="display: none;"></tbody>
                         </table>
                     </div>
                     <div id="no-results" class="text-center py-4 text-muted" style="display: none;">
@@ -136,5 +148,5 @@
         </div>
     </div>
 </div>
-
+<script src="{{ url_for('static', filename='js/staff.js') }}"></script>
 {% endblock %}
