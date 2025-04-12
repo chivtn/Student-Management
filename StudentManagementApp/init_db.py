@@ -12,7 +12,7 @@ with app.app_context():
     db.create_all()
 
     # --- Quy định ---
-    db.session.add(Regulation(min_age=15, max_age=20, max_class_size=45))
+    db.session.add(Regulation(min_age=15, max_age=20, max_class_size=40))
 
     # --- Khối lớp ---
     grade10 = GradeLevel(id=1, name=Grade.GRADE_10)
@@ -23,24 +23,30 @@ with app.app_context():
 
     # --- Môn học ---
     subjects = [
-        Subject(name="Toán", gradelevel=grade10),
-        Subject(name="Văn", gradelevel=grade10),
-        Subject(name="Anh", gradelevel=grade10),
-        Subject(name="Lý", gradelevel=grade11),
-        Subject(name="Hóa", gradelevel=grade11),
-        Subject(name="Sinh", gradelevel=grade11),
-        Subject(name="Tin", gradelevel=grade12),
-        Subject(name="GDCD", gradelevel=grade12)
+        Subject(name="Toán", gradelevel=grade10, score15P_column_number=5, score1T_column_number=3),
+        Subject(name="Văn", gradelevel=grade10, score15P_column_number=4, score1T_column_number=2),
+        Subject(name="Anh", gradelevel=grade10, score15P_column_number=3, score1T_column_number=2),
+        Subject(name="Lý", gradelevel=grade11, score15P_column_number=4, score1T_column_number=2),
+        Subject(name="Hóa", gradelevel=grade11, score15P_column_number=4, score1T_column_number=2),
+        Subject(name="Sinh", gradelevel=grade11, score15P_column_number=4, score1T_column_number=2),
+        Subject(name="Tin", gradelevel=grade12, score15P_column_number=3, score1T_column_number=1),
+        Subject(name="GDCD", gradelevel=grade12, score15P_column_number=2, score1T_column_number=1)
     ]
     db.session.add_all(subjects)
     db.session.flush()
 
     # --- Người dùng ---
-    admin = User(id=1, username='admin', password=generate_password_hash('admin123'), role=Role.ADMIN)
-    teacher = User(id=2, username='teacher1', password=generate_password_hash('teacher123'), role=Role.TEACHER)
-    staff = User(id=3, username='staff1', password=generate_password_hash('staff123'), role=Role.STAFF)
+    admin = User(id=1, name='Quản trị viên', username='admin', password=generate_password_hash('admin123'),role=Role.ADMIN)
+    teacher = User(id=2, name='Giáo viên A', username='teacher1', password=generate_password_hash('teacher123'), role=Role.TEACHER)
+    staff = User(id=3, name='Nhân viên B', username='staff1', password=generate_password_hash('staff123'),role=Role.STAFF)
+
     db.session.add_all([admin, teacher, staff])
-    db.session.add_all([Admin(id=1), Teacher(id=2, name='Nguyễn Văn A', subject_id=subjects[0].id), Staff(id=3)])
+
+    db.session.add_all([
+        Admin(id=1),
+        Teacher(id=2, name=teacher.name, subject_id=subjects[0].id),
+        Staff(id=3)
+    ])
 
     # --- Học kỳ ---
     db.session.add_all([Semester(name='Học kỳ 1'), Semester(name='Học kỳ 2')])
@@ -58,7 +64,8 @@ with app.app_context():
     # //--- Tạo dữ liệu giả cho 30 học sinh mỗi khối, không phân lớp tự động
     students = []
     for grade in [grade10, grade11, grade12]:
-        for _ in range(30):
+        for i in range(40):
+            classroom = class_map[grade.id][i % 2]  # chia đều vào A1, A2
             s = Student(
                 name=fake.name(),
                 gender=random.choice([Gender.MALE, Gender.FEMALE]),
@@ -66,12 +73,43 @@ with app.app_context():
                 address=fake.address(),
                 phone=fake.phone_number(),
                 email=fake.email(),
-                grade_id=grade.id,
-                classroom_id=None  # Không gán lớp
+                classroom_id=classroom.id,
+                grade_id=grade.id
             )
             students.append(s)
-
     db.session.add_all(students)
+
+    # --- Tạo ScoreSheet mẫu cho mỗi học sinh nếu có lớp
+    semesters = Semester.query.all()
+
+    for student in students:
+        if student.classroom_id is None:
+            continue  # Bỏ qua học sinh chưa gán lớp
+
+        for semester in semesters:
+            for subject in subjects:
+                if subject.gradelevel_id == student.grade_id:
+                    sheet = ScoreSheet(
+                        student_id=student.id,
+                        subject_id=subject.id,
+                        semester_id=semester.id,
+                        academic_year="2024-2025",
+                        classroom_id=student.classroom_id  # ✅ Bắt buộc có dòng này
+                    )
+                    db.session.add(sheet)
+
+    # --- Điểm mẫu cho mỗi ScoreSheet ---
+    score_sheets = ScoreSheet.query.all()
+    for sheet in score_sheets:
+        # Tạo 3 điểm 15p, 2 điểm 1 tiết và 1 điểm cuối kỳ
+        db.session.add_all([
+            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FIFTEEN_MIN, value=random.uniform(5, 10)),
+            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FIFTEEN_MIN, value=random.uniform(4, 10)),
+            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FIFTEEN_MIN, value=random.uniform(6, 10)),
+            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.ONE_PERIOD, value=random.uniform(5, 10)),
+            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.ONE_PERIOD, value=random.uniform(5, 9)),
+            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FINAL, value=random.uniform(5, 10)),
+        ])
 
     # --- Phụ huynh mẫu ---
     db.session.add_all([

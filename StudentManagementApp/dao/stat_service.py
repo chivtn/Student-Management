@@ -47,7 +47,7 @@ def statistics_subject(classroom_id, subject_id, semester_id):
             avg = (a_sum + b_sum * 2 + c_sum * 3) / total_weight
             scores[sid]['score'] = round(avg, 1)
 
-    return scores
+    return list(scores.values())
 
 # --- THỐNG KÊ SỐ LƯỢNG ---
 def count_users():

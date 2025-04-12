@@ -133,12 +133,14 @@ class Subject(db.Model):
     name = Column(String(100), nullable=False)
     gradelevel_id = Column(Integer, ForeignKey('gradelevel.id'))
 
-    gradelevel = relationship('GradeLevel', backref='subjects')
-    score15P_column_number = Column(Integer, nullable=True)
-    score1T_column_number = Column(Integer, nullable=True)
+    score15P_column_number = Column(Integer, nullable=True)  # Số điểm 15p tối đa
+    score1T_column_number = Column(Integer, nullable=True)   # Số điểm 1 tiết tối đa
+    scoreF_column_number = Column(Integer, default=1, nullable=False)
 
+    gradelevel = relationship('GradeLevel', backref='subjects')
     score_sheets = relationship('ScoreSheet', backref='subject', lazy=True)
     draft_scores = relationship('DraftScore', backref='subject', lazy=True)
+
 
 # ========== SCORE MODELS ==========
 class ScoreSheet(db.Model):
@@ -148,6 +150,8 @@ class ScoreSheet(db.Model):
     subject_id = Column(Integer, ForeignKey('subject.id'), nullable=False)
     semester_id = Column(Integer, ForeignKey('semester.id'), nullable=False)
     academic_year = Column(String(20), nullable=False)
+
+    classroom_id = Column(Integer, ForeignKey('classroom.id'), nullable=False)
 
     details = relationship('ScoreDetail', backref='score_sheet', lazy=True)
 

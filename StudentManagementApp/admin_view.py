@@ -5,7 +5,7 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_admin import BaseView, expose, AdminIndexView
 from flask_login import logout_user, current_user
-from flask import redirect, render_template
+from flask import redirect, render_template, url_for, request
 
 
 class AuthenticatedAdmin(BaseView):
@@ -36,6 +36,19 @@ class ChangeRule(AuthenticatedAdmin):
                            min_age=app.config['mintuoi'], max_age=app.config['maxtuoi'])
 
 
+# class SubjectView(Authenticated_Admin):
+#     column_list = ['id', 'name']
+#     column_searchable_list = ['name']
+#     column_filters = ['id', 'name']
+#     column_editable_list = ['name']  # Cho phép chỉnh trực tiếp trong bảng
+#     edit_modal = True  # Bật popup chỉnh sửa
+#     can_export = True
+#     can_create = True
+#     can_edit = True
+#     can_delete = True
+#
+#     list_template = 'admin/subject_view.html'
+
 class SubjectView(Authenticated_Admin):
     column_list = ['id', 'name']
     column_searchable_list = ['name']
@@ -43,8 +56,61 @@ class SubjectView(Authenticated_Admin):
     column_editable_list = ['name']
     edit_modal = True
     can_export = True
-
     list_template = 'admin/subject_view.html'
+
+    @expose('/')
+    def index(self):
+        keyword = request.args.get('q', '')
+        if keyword:
+            subjects = Subject.query.filter(Subject.name.ilike(f"%{keyword}%")).all()
+        else:
+            subjects = Subject.query.all()
+        return self.render('admin/subject_view.html', data=subjects)
+
+
+    @expose('/subject/create', methods=['POST'])
+    def create_subject(self):
+        name = request.form.get('name')
+        score15 = request.form.get('score15', type=int)
+        score1tiet = request.form.get('score1tiet', type=int)
+        score_final = request.form.get('score_final', type=int)
+
+        if name:
+            subject = Subject(
+                name=name,
+                score15P_column_number=score15,
+                score1T_column_number=score1tiet,
+                scoreF_column_number=score_final
+            )
+            db.session.add(subject)
+            db.session.commit()
+            from flask import flash
+            flash(f"Đã thêm môn học '{name}' thành công.")
+        return redirect(url_for('.index'))
+
+
+    @expose('/subject/update/<int:subject_id>', methods=['POST'])
+    def update_subject(self, subject_id):
+        subject = Subject.query.get(subject_id)
+        if subject:
+            subject.name = request.form.get('name')
+            subject.score15P_column_number = request.form.get('score15', type=int)
+            subject.score1T_column_number = request.form.get('score1tiet', type=int)
+            subject.scoreF_column_number = request.form.get('score_final', type=int)
+            db.session.commit()
+            from flask import flash
+            flash(f"Cập nhật môn học '{subject.name}' thành công.")
+        return redirect(url_for('.index'))
+
+    @expose('/subject/delete/<int:subject_id>', methods=['POST'])
+    def delete_subject(self, subject_id):
+        subject = Subject.query.get(subject_id)
+        if subject:
+            db.session.delete(subject)
+            db.session.commit()
+            from flask import flash
+            flash(f"Đã xoá môn học '{subject.name}' thành công.")
+        return redirect(url_for('.index'))
 
 
 class LogoutView(AuthenticatedUser):

@@ -21,13 +21,13 @@ def StatisticsScore():
     else:
         semester = 1
     if id_semester == '1':
-        schoolyear = 'Năm học 2020-2021'
+        schoolyear = '2020-2021'
     elif id_semester == '3':
-        schoolyear = 'Năm học 2021-2022'
+        schoolyear = '2021-2022'
     elif id_semester == '5':
-        schoolyear = 'Năm học 2022-2023'
+        schoolyear = '2022-2023'
     elif id_semester == '7':
-        schoolyear = 'Năm học 2023-2024'
+        schoolyear = '2023-2024'
     stu = {}
     stu[0] = {
         'subject': staff_service.get_subject_by_id(id_subject).name,
