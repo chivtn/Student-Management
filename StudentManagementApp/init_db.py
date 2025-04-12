@@ -12,7 +12,7 @@ with app.app_context():
     db.create_all()
 
     # --- Quy định ---
-    db.session.add(Regulation(min_age=15, max_age=20, max_class_size=40))
+    db.session.add(Regulation(min_age=15, max_age=20, max_class_size=45))
 
     # --- Khối lớp ---
     grade10 = GradeLevel(id=1, name=Grade.GRADE_10)
@@ -55,11 +55,10 @@ with app.app_context():
             db.session.flush()
             class_map[grade.id].append(c)
 
-    # --- Học sinh: 30 mỗi khối => 15/lớp
+    # //--- Tạo dữ liệu giả cho 30 học sinh mỗi khối, không phân lớp tự động
     students = []
     for grade in [grade10, grade11, grade12]:
-        for i in range(30):
-            classroom = class_map[grade.id][i % 2]  # chia đều vào A1, A2
+        for _ in range(30):
             s = Student(
                 name=fake.name(),
                 gender=random.choice([Gender.MALE, Gender.FEMALE]),
@@ -67,10 +66,11 @@ with app.app_context():
                 address=fake.address(),
                 phone=fake.phone_number(),
                 email=fake.email(),
-                classroom_id=classroom.id,
-                grade_id=grade.id
+                grade_id=grade.id,
+                classroom_id=None  # Không gán lớp
             )
             students.append(s)
+
     db.session.add_all(students)
 
     # --- Phụ huynh mẫu ---
