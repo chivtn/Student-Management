@@ -17,7 +17,7 @@
                             <select class="form-select" id="filterGrade" onchange="loadClassesByGrade(this.value)">
                                 <option value="">Chọn khối</option>
                                 {% for grade in grades %}
-                                <option value="{{ grade.id }}">{{ grade.name.value }}</option>
+                                <option value="{{ grade.id }}">Khối {{ grade.name.value }}</option>
                                 {% endfor %}
                             </select>
                         </div>

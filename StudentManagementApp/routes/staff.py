@@ -1,4 +1,4 @@
-#staff.py
+#routes/staff.py
 from flask import render_template, request, redirect, session, jsonify, Blueprint
 from flask_login import login_user, current_user, logout_user, login_required
 from StudentManagementApp import app, db, login
@@ -21,6 +21,7 @@ def AddStudent():
     return render_template('staff/AddStudent.html', students=students, grades=grades)
 
 @staff.route("/ThemHocSinh", methods=['POST'])
+@staff.route("/ThemHocSinh", methods=['POST'])
 def ThemHocSinh():
     err_msg = ''
     fullname = request.form.get('fullname')
@@ -30,21 +31,17 @@ def ThemHocSinh():
     phone = request.form.get('phonenumber')
     email = request.form.get('email')
     grade_id = request.form.get('grade')
-    grades = dao.get_grade()
 
     if not phone or len(phone) != 10 or not phone.isdigit():
-        err_msg = 'Số điện thoại sai. Vui lòng nhập lại!'
-        return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
+        return jsonify({'success': False, 'error': 'Số điện thoại sai. Vui lòng nhập lại!'})
 
     if not email.endswith('@gmail.com'):
-        err_msg = 'Email sai. Vui lòng nhập lại!'
-        return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
+        return jsonify({'success': False, 'error': 'Email sai. Vui lòng nhập lại!'})
 
     try:
         birth_date = datetime.strptime(DoB, '%Y-%m-%d')
     except:
-        err_msg = 'Bạn chưa nhập ngày sinh. Vui lòng thử lại!'
-        return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
+        return jsonify({'success': False, 'error': 'Bạn chưa nhập ngày sinh. Vui lòng thử lại!'})
 
     current_year = datetime.now().year
     min_age = dao.get_regulation_value("min_age")
@@ -52,8 +49,7 @@ def ThemHocSinh():
     age = current_year - birth_date.year
 
     if age < min_age or age > max_age:
-        err_msg = f'Ngày sinh không hợp lệ. Tuổi phải từ {min_age} đến {max_age}.'
-        return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
+        return jsonify({'success': False, 'error': f'Ngày sinh không hợp lệ. Tuổi phải từ {min_age} đến {max_age}.'})
 
     try:
         student = Student(
@@ -67,11 +63,24 @@ def ThemHocSinh():
         )
         db.session.add(student)
         db.session.commit()
-        return render_template('staff/AddStudent.html', err_msg='Lưu thành công', grades=grades)
+
+        return jsonify({
+            'success': True,
+            'message': 'Lưu thành công',
+            'student': {
+                'id': student.id,
+                'name': student.name,
+                'sex': 'Nam' if student.gender == Gender.MALE else 'Nữ',
+                'DoB': birth_date.strftime('%d/%m/%Y'),
+                'address': student.address,
+                'email': student.email,
+                'phonenumber': student.phone,
+                'grade': student.gradelevel.name.value if student.gradelevel else ''
+            }
+        })
     except Exception as e:
         db.session.rollback()
-        err_msg = f"Lỗi khi lưu học sinh: {str(e)}"
-        return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
+        return jsonify({'success': False, 'error': f'Lỗi khi lưu học sinh: {str(e)}'})
 
 @staff.route("/api/searchStudentAddStu", methods=['POST'])
 def search_student_add_stu():
@@ -170,6 +179,10 @@ def change_class():
     if not student or not new_class:
         return jsonify({"success": False, "message": "Học sinh hoặc lớp không tồn tại"}), 404
 
+    # TH1: Kiểm tra nếu đang chọn lớp hiện tại
+    if student.classroom_id == new_class.id:
+        return jsonify({"success": False, "message": "Học sinh đã thuộc lớp này"}), 400
+
     max_per_class = dao.get_regulation_value("max_class_size")
 
     if new_class.current_student >= max_per_class:
@@ -201,6 +214,7 @@ def change_class():
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": str(e)}), 500
+
 
 @staff.route('/api/getClassesByGrade/<int:grade_id>')
 def get_classes_by_grade(grade_id):
