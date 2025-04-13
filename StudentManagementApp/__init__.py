@@ -29,5 +29,5 @@ from StudentManagementApp.routes.staff import staff
 
 app.register_blueprint(staff)
 app.register_blueprint(teacher)
-#app.register_blueprint(admin)
+
 from StudentManagementApp import admin_view

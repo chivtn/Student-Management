@@ -4,23 +4,26 @@ let resultData = {};
 function statisticsScore() {
     const semesterId = document.getElementById('id_semester').value;
     const subjectId = document.getElementById('id_subject').value;
+    const yearId = document.getElementById('id_year').value;
 
     fetch("/api/statisticsScore", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_semester: semesterId, id_subject: subjectId })
+        body: JSON.stringify({
+            id_semester: semesterId,
+            id_subject: subjectId,
+            id_year: yearId
+        })
     })
     .then(res => res.json())
     .then(data => {
         if (!data || Object.keys(data).length === 0) throw new Error("Không có dữ liệu");
 
-        // Hiển thị thông tin báo cáo
         document.getElementById('result').style.display = 'block';
         document.getElementById('subject').textContent = `Môn học: ${data[0].subject}`;
         document.getElementById('semester').textContent = `Học kỳ: ${data[0].semester}`;
         document.getElementById('schoolyear').textContent = `Năm học: ${data[0].schoolyear}`;
 
-        // Hiển thị bảng kết quả
         const tableBody = document.getElementById('table_result');
         tableBody.innerHTML = '';
         resultData = data;
@@ -133,9 +136,9 @@ function exportExcel() {
 }
 
 function changeRule() {
-    const quantity = document.getElementById('quantity').value;
-    const minAge = document.getElementById('min_age').value;
-    const maxAge = document.getElementById('max_age').value;
+    const quantity = parseInt(document.getElementById('quantity').value);
+    const minAge = parseInt(document.getElementById('min_age').value);
+    const maxAge = parseInt(document.getElementById('max_age').value);
     const result = document.getElementById('result');
 
     if (minAge >= maxAge) {
@@ -151,13 +154,30 @@ function changeRule() {
     .then(res => res.json())
     .then(data => {
         const status = data.status === 200 ? 'success' : 'danger';
-        showAlert(result, status, data.content);
 
-        if (status === 'success') {
+        // Cập nhật bảng "QUY ĐỊNH HIỆN TẠI" nếu thành công
+        if (data.status === 200 || data.status === 300) {
             document.getElementById('current-quantity').textContent = quantity;
             document.getElementById('current-min-age').textContent = minAge;
             document.getElementById('current-max-age').textContent = maxAge;
+        }
 
+        if (data.status === 300) {
+            if (confirm(data.content)) {
+                fetch("/api/reassign_overloaded", { method: 'POST' })
+                    .then(r => r.json())
+                    .then(res2 => {
+                        showAlert(result, 'success', res2.message);
+                        setTimeout(() => result.innerHTML = '', 3000);
+                    });
+            } else {
+                showAlert(result, 'info', 'Thao tác bị huỷ bởi người dùng.');
+            }
+            return;
+        }
+
+        showAlert(result, status, data.content);
+        if (status === 'success') {
             setTimeout(() => result.innerHTML = '', 3000);
         }
     })

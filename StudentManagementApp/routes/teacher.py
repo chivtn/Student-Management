@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, request, send_file, redirect, url_for
+#routes/teacher.py
+from flask import Blueprint, render_template, request, send_file
 from flask_login import current_user, login_required
 from StudentManagementApp import db
-from StudentManagementApp.models import Teacher, Classroom, Student, Semester
-from StudentManagementApp.dao import score_service, export_score_service
+from StudentManagementApp.models import Teacher, Classroom, Student, Semester, AcademicYear
+from StudentManagementApp.dao import score_service, export_score_service, staff_service
 
 teacher = Blueprint('teacher', __name__, url_prefix='/teacher')
 
@@ -16,28 +17,28 @@ def index():
 @login_required
 def view_avg_scores():
     selected_class = request.args.get('class_id', type=int)
-    selected_year = request.args.get('year', default='2024-2025')
+    selected_year_id = request.args.get('year', type=int)
     selected_semester = request.args.get('semester', type=int)
 
     teacher_obj = Teacher.query.filter_by(id=current_user.id).first()
     classes = teacher_obj.classrooms
-    years = ['2023-2024', '2024-2025']
+    years = AcademicYear.query.order_by(AcademicYear.start_year.desc()).all()
     semesters = Semester.query.all()
     scores_list = []
 
-    if selected_class:
+    if selected_class and selected_year_id:
         students = Student.query.filter_by(classroom_id=selected_class).all()
 
         for student in students:
             if selected_semester:
-                avg = score_service.calculate_avg_score(student.id, selected_year, selected_semester)
+                avg = score_service.calculate_avg_score(student.id, selected_year_id, selected_semester)
                 scores_list.append({
                     "name": student.name,
                     "avg_score": round(avg, 2) if avg is not None else None
                 })
             else:
-                avg1 = score_service.calculate_avg_score(student.id, selected_year, 1)
-                avg2 = score_service.calculate_avg_score(student.id, selected_year, 2)
+                avg1 = score_service.calculate_avg_score(student.id, selected_year_id, 1)
+                avg2 = score_service.calculate_avg_score(student.id, selected_year_id, 2)
                 avg_year = round((avg1 + avg2) / 2, 2) if avg1 is not None and avg2 is not None else None
                 scores_list.append({
                     "name": student.name,
@@ -52,7 +53,7 @@ def view_avg_scores():
         years=years,
         semesters=semesters,
         selected_class=selected_class,
-        selected_year=selected_year,
+        selected_year=selected_year_id,
         selected_semester=selected_semester,
         scores=scores_list
     )
@@ -61,11 +62,11 @@ def view_avg_scores():
 @login_required
 def export_avg_scores():
     class_id = request.args.get('class_id', type=int)
-    year = request.args.get('year')
+    year_id = request.args.get('year', type=int)
     semester = request.args.get('semester', type=int)
     teacher = Teacher.query.filter_by(id=current_user.id).first()
 
-    excel_file, filename = export_score_service.generate_avg_score_excel(class_id, year, semester, teacher=teacher)
+    excel_file, filename = export_score_service.generate_avg_score_excel(class_id, year_id, semester, teacher=teacher)
     return send_file(excel_file, download_name=filename, as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 @teacher.route('/my_classes')
@@ -100,7 +101,7 @@ def select_for_grading():
         semester_id = int(request.form['semester_id'])
         selected_class = Classroom.query.get_or_404(class_id)
         selected_semester = Semester.query.get_or_404(semester_id)
-        academic_year = selected_class.academic_year
+        academic_year_id = selected_class.academic_year_id
         subject_id = subject.id
 
         students = Student.query.filter_by(classroom_id=class_id).all()
@@ -108,19 +109,19 @@ def select_for_grading():
         # Lưu điểm chính thức
         if 'save_scores' in request.form:
             score_service.store_scores(
-                request.form, students, academic_year, semester_id, subject_id
+                request.form, students, academic_year_id, semester_id, subject_id
             )
             db.session.commit()
 
         # Lưu nháp
         elif 'draft' in request.form:
             score_service.save_draft_scores(
-                request.form, students, academic_year, semester_id, subject_id
+                request.form, students, academic_year_id, semester_id, subject_id
             )
             db.session.commit()
 
         scores_map = score_service.fetch_scores_for_students(
-            students, academic_year, semester_id, subject_id
+            students, academic_year_id, semester_id, subject_id
         )
 
     return render_template(
@@ -131,6 +132,6 @@ def select_for_grading():
         selected_semester=selected_semester,
         students=students,
         scores_map=scores_map,
-        subject=subject,  # truyền sang để giới hạn số cột nhập điểm theo đúng quy định
+        subject=subject,
         message=message
     )

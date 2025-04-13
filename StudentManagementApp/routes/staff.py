@@ -1,7 +1,6 @@
 #routes/staff.py
 from flask import render_template, request, redirect, session, jsonify, Blueprint
 from flask_login import login_user, current_user, logout_user, login_required
-from StudentManagementApp import app, db, login
 from StudentManagementApp.models import *
 from StudentManagementApp.dao import staff_service as dao
 from datetime import datetime
@@ -21,9 +20,7 @@ def AddStudent():
     return render_template('staff/AddStudent.html', students=students, grades=grades)
 
 @staff.route("/ThemHocSinh", methods=['POST'])
-@staff.route("/ThemHocSinh", methods=['POST'])
 def ThemHocSinh():
-    err_msg = ''
     fullname = request.form.get('fullname')
     gender = request.form.get('sex')
     DoB = request.form.get('DoB')
@@ -81,6 +78,7 @@ def ThemHocSinh():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': f'Lỗi khi lưu học sinh: {str(e)}'})
+
 
 @staff.route("/api/searchStudentAddStu", methods=['POST'])
 def search_student_add_stu():
@@ -144,6 +142,7 @@ def CreateClassList():
                            unassigned_12=result["unassigned_students"].get(3, []),
                            grades=dao.get_grade())
 
+
 @staff.route('/api/printClass', methods=['POST'])
 def PrintClass():
     id_class = request.json.get('id_class')
@@ -160,10 +159,13 @@ def PrintClass():
         }
     return jsonify(result)
 
+
 @staff.route("/AdjustClass")
 def AdjustClass():
+    active_year = dao.get_active_academic_year()
+    classes = Classroom.query.filter_by(academic_year_id=active_year.id).all() if active_year else []
     return render_template("staff/AdjustClass.html",
-                           classes=dao.get_all_classrooms(),
+                           classes=classes,
                            grades=dao.get_grade(),
                            max_per_class=dao.get_regulation_value("max_class_size"))
 

@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship, backref
 from StudentManagementApp import db
 from flask_login import UserMixin
 from enum import Enum as enum
+from sqlalchemy.ext.hybrid import hybrid_property
 import hashlib
 
 # ========== ENUMS ==========
@@ -69,12 +70,13 @@ class Classroom(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
     gradelevel_id = Column(Integer, ForeignKey('gradelevel.id'), nullable=False)
-    academic_year = Column(String(20), nullable=False)
+    academic_year_id = Column(Integer, ForeignKey('academic_year.id'), nullable=False)
     homeroom_teacher_id = Column(Integer, ForeignKey('teacher.id'), unique=True)
 
     gradelevel = relationship('GradeLevel', backref='classrooms')
     students = relationship('Student', backref='classroom', lazy=True)
     teachers = relationship('Teacher', secondary='teacher_classroom', back_populates='classrooms')
+
 
     @property
     def current_student(self):
@@ -127,6 +129,24 @@ class Semester(db.Model):
     score_sheets = relationship('ScoreSheet', backref='semester', lazy=True)
     draft_scores = relationship('DraftScore', backref='semester', lazy=True)
 
+
+class AcademicYear(db.Model):
+    __tablename__ = 'academic_year'
+
+    id = Column(Integer, primary_key=True)
+    start_year = Column(Integer, nullable=False)
+    end_year = Column(Integer, nullable=False)
+    is_active = Column(db.Boolean, default=True)
+
+    classrooms = relationship('Classroom', backref='academic_year_obj', lazy=True)
+    scoresheets = relationship('ScoreSheet', backref='academic_year_obj', lazy=True)
+    draft_scores = relationship('DraftScore', backref='academic_year_obj', lazy=True)
+
+    @hybrid_property
+    def name(self):
+        return f"{self.start_year}–{self.end_year}"  #Tự sinh name khi gọi
+
+
 class Subject(db.Model):
     __tablename__ = 'subject'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -149,7 +169,7 @@ class ScoreSheet(db.Model):
     student_id = Column(Integer, ForeignKey('student.id'), nullable=False)
     subject_id = Column(Integer, ForeignKey('subject.id'), nullable=False)
     semester_id = Column(Integer, ForeignKey('semester.id'), nullable=False)
-    academic_year = Column(String(20), nullable=False)
+    academic_year_id = Column(Integer, ForeignKey('academic_year.id'), nullable=False)
 
     classroom_id = Column(Integer, ForeignKey('classroom.id'), nullable=False)
 
@@ -168,7 +188,7 @@ class DraftScore(db.Model):
     student_id = Column(Integer, ForeignKey('student.id'), nullable=False)
     subject_id = Column(Integer, ForeignKey('subject.id'), nullable=False)
     semester_id = Column(Integer, ForeignKey('semester.id'), nullable=False)
-    academic_year = Column(String(20), nullable=False)
+    academic_year_id = Column(Integer, ForeignKey('academic_year.id'), nullable=False)
     type = Column(Enum(ScoreType), nullable=False)
     value = Column(Float, nullable=False)
 
@@ -179,7 +199,6 @@ Teacher_Classroom = db.Table(
     db.Column('classroom_id', db.Integer, db.ForeignKey('classroom.id'), primary_key=True)
 )
 
-#xem lại có cần ko
 class Regulation(db.Model):
     __tablename__ = 'regulation'
     id = Column(Integer, primary_key=True)

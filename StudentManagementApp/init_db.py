@@ -1,3 +1,4 @@
+#init_db
 from StudentManagementApp import app
 from StudentManagementApp.models import *
 from faker import Faker
@@ -13,6 +14,12 @@ with app.app_context():
     # --- Quy định ---
     rule = Regulation(min_age=15, max_age=20, max_class_size=40)
     db.session.add(rule)
+
+    # --- Năm học ---
+    # --- Năm học ---
+    year_2024 = AcademicYear(start_year=2024, end_year=2025, is_active=True)
+    db.session.add(year_2024)
+    db.session.flush()
 
     # --- Khối lớp ---
     grade10 = GradeLevel(id=1, name=Grade.GRADE_10)
@@ -39,7 +46,6 @@ with app.app_context():
     admin = User(id=1, name='Quản trị viên', username='admin', password=generate_password_hash('admin123'), role=Role.ADMIN)
     teacher = User(id=2, name='Giáo viên A', username='teacher1', password=generate_password_hash('teacher123'), role=Role.TEACHER)
     staff = User(id=3, name='Nhân viên B', username='staff1', password=generate_password_hash('staff123'), role=Role.STAFF)
-
     db.session.add_all([admin, teacher, staff])
     db.session.flush()
 
@@ -51,7 +57,9 @@ with app.app_context():
     db.session.flush()
 
     # --- Học kỳ ---
-    db.session.add_all([Semester(name='Học kỳ 1'), Semester(name='Học kỳ 2')])
+    semester1 = Semester(name='Học kỳ 1')
+    semester2 = Semester(name='Học kỳ 2')
+    db.session.add_all([semester1, semester2])
     db.session.flush()
 
     # --- Lớp học (2 lớp mỗi khối) ---
@@ -59,7 +67,7 @@ with app.app_context():
     for grade in [grade10, grade11, grade12]:
         class_map[grade.id] = []
         for i in range(1, 3):  # A1, A2
-            c = Classroom(name=f"{grade.name.value}A{i}", gradelevel_id=grade.id, academic_year="2024-2025")
+            c = Classroom(name=f"{grade.name.value}A{i}", gradelevel_id=grade.id, academic_year_id=year_2024.id)
             db.session.add(c)
             db.session.flush()
             class_map[grade.id].append(c)
@@ -98,7 +106,7 @@ with app.app_context():
                         student_id=student.id,
                         subject_id=subject.id,
                         semester_id=semester.id,
-                        academic_year="2024-2025",
+                        academic_year_id=year_2024.id,
                         classroom_id=student.classroom_id
                     )
                     db.session.add(sheet)

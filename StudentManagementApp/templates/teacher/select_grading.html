@@ -15,7 +15,7 @@
                         <option value="">-- Chọn lớp --</option>
                         {% for c in classes %}
                         <option value="{{ c.id }}" {% if selected_class and selected_class.id== c.id %}selected{% endif
-                                %}>{{ c.name }} ({{ c.academic_year }})
+                                %}>{{ c.name }}
                         </option>
                         {% endfor %}
                     </select>

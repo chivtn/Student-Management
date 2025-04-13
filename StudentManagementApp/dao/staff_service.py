@@ -1,6 +1,8 @@
 #staff_service.py
 from StudentManagementApp.models import *
 from StudentManagementApp import db
+from datetime import datetime
+import hashlib
 
 # --- AUTH ---
 def get_user_by_id(user_id):
@@ -10,17 +12,16 @@ def auth_staff(username, password):
     password = hashlib.md5(password.encode('utf-8')).hexdigest()
     return User.query.filter_by(username=username, password=password, role=Role.STAFF).first()
 
+# --- QUY ĐỊNH ---
 def get_regulation_value(attr):
     rule = Regulation.query.first()
     if not rule:
         return None
-    if attr == "min_age":
-        return rule.min_age
-    elif attr == "max_age":
-        return rule.max_age
-    elif attr == "max_class_size":
-        return rule.max_class_size
-    return None
+    return getattr(rule, attr, None)
+
+# --- ACADEMIC YEAR ---
+def get_active_academic_year():
+    return AcademicYear.query.filter_by(is_active=True).first()
 
 # --- CLASSROOMS ---
 def get_all_classrooms():
@@ -77,38 +78,39 @@ def get_grade():
 def create_class_list():
     grades = get_grade()
     unassigned_students = {g.id: [] for g in grades}
+    active_year = get_active_academic_year()
+
+    if not active_year:
+        raise Exception("Năm học chưa bắt đầu hoặc đã kết thức!")
 
     for g in grades:
         students = get_students_by_gradelevel(g.id)
         unassigned = [s for s in students if not s.classroom_id]
         max_per_class = get_regulation_value("max_class_size")
 
-        current_classes = get_classrooms_by_gradelevel(g.id)
+        current_classes = Classroom.query.filter_by(gradelevel_id=g.id, academic_year_id=active_year.id).all()
+
         if not current_classes:
-            new_class = Classroom(name=f"{g.name.value}A1", gradelevel_id=g.id, academic_year=str(datetime.now().year))
-            db.session.add(new_class)
-            db.session.commit()
+            new_class = create_new_classroom(g, 1)
+            assign_teachers_to_class(new_class)
             current_classes = [new_class]
 
-        required_classes = max((len(unassigned) + max_per_class - 1) // max_per_class, len(current_classes))
-
-        while len(current_classes) < required_classes:
-            last_class = Classroom.query.filter_by(gradelevel_id=g.id).order_by(Classroom.name.desc()).first()
-            suffix = int(last_class.name.split("A")[-1]) + 1 if last_class else 1
-            new_class = Classroom(name=f"{g.name.value}A{suffix}", gradelevel_id=g.id,
-                                  academic_year=str(datetime.now().year))
-            db.session.add(new_class)
-            db.session.commit()
-            current_classes.append(new_class)
-
-        sorted_classes = sorted(current_classes, key=lambda c: c.current_student)
-
-        for student in unassigned:
-            for cls in sorted_classes:
+        suffix = len(current_classes) + 1
+        while unassigned:
+            # Tìm lớp còn chỗ
+            placed = False
+            for cls in current_classes:
                 if cls.current_student < max_per_class:
-                    student.classroom_id = cls.id
+                    cls.students.append(unassigned.pop(0))
                     db.session.commit()
+                    placed = True
                     break
+
+            if not placed:
+                new_class = create_new_classroom(current_classes[0], suffix)
+                assign_teachers_to_class(new_class)
+                current_classes.append(new_class)
+                suffix += 1
 
         unassigned_students[g.id] = [s for s in students if not s.classroom_id]
 
@@ -116,3 +118,64 @@ def create_class_list():
         "classes": get_all_classrooms(),
         "unassigned_students": unassigned_students
     }
+
+# --- TẠO LỚP MỚI ---
+def create_new_classroom(old_class, suffix):
+    new_class_name = f"{old_class.gradelevel.name.value}A{suffix}"
+    new_class = Classroom(
+        name=new_class_name,
+        gradelevel_id=old_class.gradelevel_id,
+        academic_year_id=old_class.academic_year_id
+    )
+    db.session.add(new_class)
+    db.session.commit()
+    return new_class
+
+# --- GÁN GIÁO VIÊN CHO LỚP MỚI ---
+def assign_teachers_to_class(classroom):
+    subjects_in_grade = Subject.query.filter_by(gradelevel_id=classroom.gradelevel_id).all()
+    for subject in subjects_in_grade:
+        teacher = Teacher.query.filter_by(subject_id=subject.id).order_by(db.func.rand()).first()
+        if teacher:
+            teacher.classrooms.append(classroom)
+    db.session.commit()
+
+# --- PHÂN LẠI LỚP KHI THAY ĐỔI QUY ĐỊNH ---
+def reassign_overloaded_classes(max_size):
+    overloaded_classes = [c for c in Classroom.query.all() if len(c.students) > max_size]
+
+    for old_class in overloaded_classes:
+        students = old_class.students
+        extra_students = students[max_size:]
+
+        available_classes = Classroom.query.filter(
+            Classroom.gradelevel_id == old_class.gradelevel_id,
+            Classroom.academic_year_id == old_class.academic_year_id
+        ).all()
+
+        for cls in available_classes:
+            remaining = max_size - len(cls.students)
+            if remaining > 0:
+                to_move = extra_students[:remaining]
+                for s in to_move:
+                    s.classroom_id = cls.id
+                extra_students = extra_students[remaining:]
+                db.session.commit()
+
+        while extra_students:
+            existing_names = [c.name for c in Classroom.query.filter_by(gradelevel_id=old_class.gradelevel_id).all()]
+            new_suffix = 1
+            while f"{old_class.gradelevel.name.value}A{new_suffix}" in existing_names:
+                new_suffix += 1
+
+            new_class = create_new_classroom(old_class, new_suffix)
+
+            for s in extra_students[:max_size]:
+                s.classroom_id = new_class.id
+
+            extra_students = extra_students[max_size:]
+            db.session.commit()
+
+            assign_teachers_to_class(new_class)
+
+    db.session.commit()

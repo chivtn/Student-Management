@@ -1,18 +1,18 @@
 #stat_service.py
-import random
 import hashlib
 from sqlalchemy import func
 from StudentManagementApp.models import *
-from StudentManagementApp import app, db
+from StudentManagementApp import db
 from StudentManagementApp.dao import staff_service as dao
 
 # --- THỐNG KÊ ĐIỂM MÔN HỌC ---
 def statistics_subject(classroom_id, subject_id, semester_id):
     students = dao.get_student_by_class(classroom_id)
-    scores = {}
+    academic_year = dao.get_active_academic_year()
+    if not academic_year:
+        raise Exception("Không tìm thấy năm học đang hoạt động")
 
-    for student in students:
-        scores[student.id] = {"id_student": student.id, "score": 0}
+    scores = {student.id: {"id_student": student.id, "score": 0} for student in students}
 
     def query_scores(score_type):
         return db.session.query(
@@ -24,6 +24,7 @@ def statistics_subject(classroom_id, subject_id, semester_id):
             ScoreSheet.classroom_id == classroom_id,
             ScoreSheet.subject_id == subject_id,
             ScoreSheet.semester_id == semester_id,
+            ScoreSheet.academic_year_id == academic_year.id,
             ScoreDetail.type == score_type
         ).group_by(ScoreSheet.student_id).all()
 
@@ -32,21 +33,13 @@ def statistics_subject(classroom_id, subject_id, semester_id):
     final_scores = query_scores(ScoreType.FINAL)
 
     for sid, a_sum, a_count in fifteen_scores:
-        b_sum, b_count = (0, 0)
-        c_sum, c_count = (0, 0)
-
-        for sid_b, s_b, c_b in one_period_scores:
-            if sid_b == sid:
-                b_sum, b_count = s_b, c_b
-        for sid_c, s_c, c_c in final_scores:
-            if sid_c == sid:
-                c_sum, c_count = s_c, c_c
+        b_sum, b_count = next(((s, c) for sid_b, s, c in one_period_scores if sid_b == sid), (0, 0))
+        c_sum, c_count = next(((s, c) for sid_c, s, c in final_scores if sid_c == sid), (0, 0))
 
         total_weight = a_count + b_count * 2 + c_count * 3
         if total_weight > 0:
             avg = (a_sum + b_sum * 2 + c_sum * 3) / total_weight
-            if sid in scores:
-                scores[sid]['score'] = round(avg, 1)
+            scores[sid]['score'] = round(avg, 1)
 
     return list(scores.values())
 

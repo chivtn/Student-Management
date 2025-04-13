@@ -1,4 +1,4 @@
-# score_service.py
+#score_service.py
 from StudentManagementApp import db
 from StudentManagementApp.models import ScoreSheet, ScoreDetail, DraftScore, ScoreType, Subject, Student
 import re
@@ -9,25 +9,25 @@ def get_score_limits(subject_id):
         return subject.score15P_column_number or 0, subject.score1T_column_number or 0
     return 0, 0
 
-def fetch_scores_for_students(students, academic_year, semester_id, subject_id):
+def fetch_scores_for_students(students, academic_year_id, semester_id, subject_id):
     scores_map = {}
     for student in students:
-        official = get_score_sheet(student.id, subject_id, semester_id, academic_year)
+        official = get_score_sheet(student.id, subject_id, semester_id, academic_year_id)
         draft = DraftScore.query.filter_by(
             student_id=student.id,
             subject_id=subject_id,
             semester_id=semester_id,
-            academic_year=academic_year
+            academic_year_id=academic_year_id
         ).all()
         scores_map[student.id] = parse_combined_scores(official, draft)
     return scores_map
 
-def get_score_sheet(student_id, subject_id, semester_id, academic_year):
+def get_score_sheet(student_id, subject_id, semester_id, academic_year_id):
     return ScoreSheet.query.filter_by(
         student_id=student_id,
         subject_id=subject_id,
         semester_id=semester_id,
-        academic_year=academic_year
+        academic_year_id=academic_year_id
     ).first()
 
 def parse_combined_scores(sheet, drafts):
@@ -74,30 +74,30 @@ def compute_weighted_average(s15, s1t, final):
     avg_1t = sum(s1t) / len(s1t)
     return round((avg_15 * 1 + avg_1t * 2 + final * 3) / 6, 2)
 
-def store_scores(form_data, students, academic_year, semester_id, subject_id):
+def store_scores(form_data, students, academic_year_id, semester_id, subject_id):
     for student in students:
-        sheet = get_or_create_score_sheet(student.id, subject_id, semester_id, academic_year)
+        sheet = get_or_create_score_sheet(student.id, subject_id, semester_id, academic_year_id)
         save_score_details(sheet, form_data, student.id)
-        delete_draft_scores(student.id, subject_id, semester_id, academic_year)
+        delete_draft_scores(student.id, subject_id, semester_id, academic_year_id)
     db.session.commit()
 
-def save_draft_scores(form_data, students, academic_year, semester_id, subject_id):
+def save_draft_scores(form_data, students, academic_year_id, semester_id, subject_id):
     for student in students:
         DraftScore.query.filter_by(
             student_id=student.id,
             subject_id=subject_id,
             semester_id=semester_id,
-            academic_year=academic_year
+            academic_year_id=academic_year_id
         ).delete()
 
         draft_scores = []
         max_15, max_1t = get_score_limits(subject_id)
         draft_scores.extend(extract_unique_scores(
-            form_data, student.id, subject_id, semester_id, academic_year,
+            form_data, student.id, subject_id, semester_id, academic_year_id,
             '15', ScoreType.FIFTEEN_MIN, max_15
         ))
         draft_scores.extend(extract_unique_scores(
-            form_data, student.id, subject_id, semester_id, academic_year,
+            form_data, student.id, subject_id, semester_id, academic_year_id,
             '1tiet', ScoreType.ONE_PERIOD, max_1t
         ))
 
@@ -108,7 +108,7 @@ def save_draft_scores(form_data, students, academic_year, semester_id, subject_i
                 student_id=student.id,
                 subject_id=subject_id,
                 semester_id=semester_id,
-                academic_year=academic_year,
+                academic_year_id=academic_year_id,
                 type=ScoreType.FINAL,
                 value=final_val
             ))
@@ -116,7 +116,7 @@ def save_draft_scores(form_data, students, academic_year, semester_id, subject_i
         db.session.add_all(draft_scores)
     db.session.commit()
 
-def extract_unique_scores(form_data, student_id, subject_id, semester_id, academic_year, prefix, score_type, max_count):
+def extract_unique_scores(form_data, student_id, subject_id, semester_id, academic_year_id, prefix, score_type, max_count):
     pattern = re.compile(f"score_{prefix}_{student_id}_(.+)")
     scores = []
     count = 0
@@ -129,7 +129,7 @@ def extract_unique_scores(form_data, student_id, subject_id, semester_id, academ
                         student_id=student_id,
                         subject_id=subject_id,
                         semester_id=semester_id,
-                        academic_year=academic_year,
+                        academic_year_id=academic_year_id,
                         type=score_type,
                         value=value
                     ))
@@ -140,20 +140,19 @@ def extract_unique_scores(form_data, student_id, subject_id, semester_id, academ
                 continue
     return scores
 
-def delete_draft_scores(student_id, subject_id, semester_id, academic_year):
+def delete_draft_scores(student_id, subject_id, semester_id, academic_year_id):
     DraftScore.query.filter_by(
         student_id=student_id,
         subject_id=subject_id,
         semester_id=semester_id,
-        academic_year=academic_year
+        academic_year_id=academic_year_id
     ).delete()
 
-def get_or_create_score_sheet(student_id, subject_id, semester_id, academic_year):
-    sheet = get_score_sheet(student_id, subject_id, semester_id, academic_year)
+def get_or_create_score_sheet(student_id, subject_id, semester_id, academic_year_id):
+    sheet = get_score_sheet(student_id, subject_id, semester_id, academic_year_id)
     if not sheet:
         student = Student.query.get(student_id)
 
-        # Kiểm tra nếu student không có classroom_id thì raise lỗi rõ ràng
         if not student.classroom_id:
             raise ValueError(f"Student ID {student_id} không có classroom_id. Vui lòng kiểm tra dữ liệu.")
 
@@ -161,13 +160,12 @@ def get_or_create_score_sheet(student_id, subject_id, semester_id, academic_year
             student_id=student_id,
             subject_id=subject_id,
             semester_id=semester_id,
-            academic_year=academic_year,
+            academic_year_id=academic_year_id,
             classroom_id=student.classroom_id
         )
         db.session.add(sheet)
         db.session.flush()
     return sheet
-
 
 def save_score_details(sheet, form_data, student_id):
     ScoreDetail.query.filter_by(score_sheet_id=sheet.id).delete()
@@ -198,10 +196,10 @@ def extract_score_values(form_data, student_id, prefix, max_count):
                 continue
     return values
 
-def calculate_avg_score(student_id, academic_year, semester_id):
+def calculate_avg_score(student_id, academic_year_id, semester_id):
     scores = db.session.query(ScoreDetail.value).join(ScoreSheet).filter(
         ScoreSheet.student_id == student_id,
-        ScoreSheet.academic_year == academic_year,
+        ScoreSheet.academic_year_id == academic_year_id,
         ScoreSheet.semester_id == semester_id
     ).all()
     values = [s.value for s in scores]

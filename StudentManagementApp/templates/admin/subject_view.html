@@ -8,21 +8,27 @@
 
     <!-- Thông báo thành công -->
     {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for msg in messages %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ msg }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
     {% endwith %}
 
-    <!-- Form tìm kiếm -->
-    <form method="GET" class="input-group mb-4">
-        <input type="text" name="q" class="form-control" placeholder="Tìm môn học theo tên..." value="{{ request.args.get('q', '') }}">
-        <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
-    </form>
+    <!-- Form tìm kiếm + nút xem tất cả -->
+    <div class="d-flex mb-4 gap-2 ms-auto justify-content-end">
+        <form method="GET" class="input-group" style="max-width: 500px;">
+            <input type="text" name="q" class="form-control" placeholder="Tìm môn học theo tên..."
+                   value="{{ request.args.get('q', '') }}">
+            <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
+        </form>
+        <a href="{{ url_for('subjectview.index') }}" class="btn btn-outline-primary">
+            <i class="fas fa-list me-1"></i>Xem tất cả
+        </a>
+    </div>
 
     <!-- Form thêm môn học mới -->
     <form method="POST" action="{{ url_for('subjectview.create_subject') }}" class="row g-3 mb-5">
@@ -43,6 +49,7 @@
         </div>
     </form>
 
+
     {% if data %}
     <table class="table table-bordered table-striped align-middle text-center">
         <thead class="table-dark">
@@ -59,18 +66,23 @@
         {% for row in data %}
         <tr>
             <td>{{ loop.index }}</td>
-            <form method="POST" action="{{ url_for('subjectview.update_subject', subject_id=row.id) }}" class="align-middle">
+            <form method="POST" action="{{ url_for('subjectview.update_subject', subject_id=row.id) }}"
+                  class="align-middle">
                 <td><input type="text" name="name" class="form-control" value="{{ row.name }}" required></td>
-                <td><input type="number" name="score15" class="form-control" value="{{ row.score15P_column_number }}" min="0" max="10" required></td>
-                <td><input type="number" name="score1tiet" class="form-control" value="{{ row.score1T_column_number }}" min="0" max="10" required></td>
-                <td><input type="number" name="score_final" class="form-control" value="{{ row.scoreF_column_number }}" min="0" max="1" required></td>
+                <td><input type="number" name="score15" class="form-control" value="{{ row.score15P_column_number }}"
+                           min="0" max="10" required></td>
+                <td><input type="number" name="score1tiet" class="form-control" value="{{ row.score1T_column_number }}"
+                           min="0" max="10" required></td>
+                <td><input type="number" name="score_final" class="form-control" value="{{ row.scoreF_column_number }}"
+                           min="0" max="1" required></td>
                 <td class="d-flex justify-content-center gap-2">
                     <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-save me-1"></i>Lưu</button>
             </form>
-            <form method="POST" action="{{ url_for('subjectview.delete_subject', subject_id=row.id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn xoá môn này không?')">
-                    <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt me-1"></i>Xoá</button>
+            <form method="POST" action="{{ url_for('subjectview.delete_subject', subject_id=row.id) }}"
+                  onsubmit="return confirm('Bạn có chắc chắn muốn xoá môn này không?')">
+                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt me-1"></i>Xoá</button>
             </form>
-                </td>
+            </td>
         </tr>
         {% endfor %}
         </tbody>

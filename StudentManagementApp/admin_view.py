@@ -26,7 +26,12 @@ class AuthenticatedUser(BaseView):
 class StatsView(AuthenticatedAdmin):
     @expose("/")
     def index(self):
-        return self.render('admin/Statistics.html', subjects=dao.get_subject(), semesters=dao.get_semester())
+        return self.render(
+            'admin/Statistics.html',
+            subjects=dao.get_subject(),
+            semesters=dao.get_semester(),
+            academic_years=AcademicYear.query.order_by(AcademicYear.start_year.desc()).all()
+        )
 
 
 class ChangeRule(AuthenticatedAdmin):
@@ -93,6 +98,7 @@ class SubjectView(Authenticated_Admin):
             from flask import flash
             flash(f"Cập nhật môn học '{subject.name}' thành công.")
         return redirect(url_for('.index'))
+
 
     @expose('/subject/delete/<int:subject_id>', methods=['POST'])
     def delete_subject(self, subject_id):
