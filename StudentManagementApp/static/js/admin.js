@@ -7,41 +7,40 @@ function statisticsScore() {
 
     fetch("/api/statisticsScore", {
         method: "POST",
-        body: JSON.stringify({
-            'id_semester': semesterId,
-            'id_subject': subjectId
-        }),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(function(res) {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-    }).then(function(data) {
-        if (!data || data.length === 0) throw new Error('No data received');
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_semester: semesterId, id_subject: subjectId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data || Object.keys(data).length === 0) throw new Error("Không có dữ liệu");
 
+        // Hiển thị thông tin báo cáo
         document.getElementById('result').style.display = 'block';
         document.getElementById('subject').textContent = `Môn học: ${data[0].subject}`;
         document.getElementById('semester').textContent = `Học kỳ: ${data[0].semester}`;
         document.getElementById('schoolyear').textContent = `Năm học: ${data[0].schoolyear}`;
 
+        // Hiển thị bảng kết quả
         const tableBody = document.getElementById('table_result');
         tableBody.innerHTML = '';
         resultData = data;
 
         for (let i = 1; i <= data[0].quantity; i++) {
             const row = tableBody.insertRow();
-            row.insertCell().textContent = i;
-            row.insertCell().textContent = data[i].class;
-            row.insertCell().textContent = data[i].quantity_student;
-            row.insertCell().textContent = data[i].quantity_passed;
-            row.insertCell().textContent = `${data[i].rate}%`;
+            row.innerHTML = `
+                <td>${i}</td>
+                <td>${data[i].class}</td>
+                <td>${data[i].quantity_student}</td>
+                <td>${data[i].quantity_passed}</td>
+                <td>${data[i].rate}%</td>
+            `;
         }
 
         document.getElementById('no-data').style.display = 'none';
         drawChart();
-    }).catch(function(error) {
-        console.error('Error:', error);
+    })
+    .catch(err => {
+        console.error('Error:', err);
         alert('Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.');
     });
 }
@@ -49,37 +48,33 @@ function statisticsScore() {
 function drawChart() {
     const ctx = document.getElementById('chart');
     const chartType = document.getElementById('select_chart').value;
-    document.getElementById('no-data').style.display = 'none';
 
-    if (myChart) myChart.destroy();
-    if (!resultData || resultData.length === 0) {
+    if (!resultData || Object.keys(resultData).length === 0) {
         document.getElementById('no-data').style.display = 'flex';
         return;
     }
 
+    if (myChart) myChart.destroy();
+
     const labels = [];
-    const dataValues = [];
+    const values = [];
     const backgroundColors = [];
 
     for (let i = 1; i <= resultData[0].quantity; i++) {
         labels.push(resultData[i].class);
-        dataValues.push(resultData[i].quantity_passed);
-
-        const r = Math.floor(Math.random() * 255);
-        const g = Math.floor(Math.random() * 255);
-        const b = Math.floor(Math.random() * 255);
-        backgroundColors.push(`rgba(${r}, ${g}, ${b}, 0.7)`);
+        values.push(resultData[i].quantity_passed);
+        backgroundColors.push(`rgba(${rand()}, ${rand()}, ${rand()}, 0.7)`);
     }
 
     myChart = new Chart(ctx, {
         type: chartType,
         data: {
-            labels: labels,
+            labels,
             datasets: [{
                 label: 'Số lượng đạt',
-                data: dataValues,
+                data: values,
                 backgroundColor: backgroundColors,
-                borderColor: backgroundColors.map(color => color.replace('0.7', '1')),
+                borderColor: backgroundColors.map(c => c.replace('0.7', '1')),
                 borderWidth: 1
             }]
         },
@@ -90,12 +85,7 @@ function drawChart() {
                 legend: { position: 'top' },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            if (context.parsed.y !== undefined) label += context.parsed.y;
-                            return label;
-                        }
+                        label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}`
                     }
                 }
             }
@@ -104,135 +94,120 @@ function drawChart() {
 }
 
 function exportExcel() {
-    const subjectText = document.getElementById('subject').textContent.replace('Môn học: ', '');
-    const semesterText = document.getElementById('semester').textContent.replace('Học kỳ: ', '');
-    const yearText = document.getElementById('schoolyear').textContent.replace('Năm học: ', '');
+    const subject = getText('subject', 'Môn học: ');
+    const semester = getText('semester', 'Học kỳ: ');
+    const year = getText('schoolyear', 'Năm học: ');
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Báo cáo môn học');
+    const sheet = workbook.addWorksheet('Báo cáo môn học');
 
-    // ==== TIÊU ĐỀ LỚN ====
-    worksheet.mergeCells('A1', 'E1');
-    worksheet.getCell('A1').value = 'BÁO CÁO TỔNG KẾT MÔN HỌC';
-    worksheet.getCell('A1').alignment = { horizontal: 'center' };
-    worksheet.getCell('A1').font = { bold: true, size: 16 };
+    sheet.mergeCells('A1', 'E1');
+    sheet.getCell('A1').value = 'BÁO CÁO TỔNG KẾT MÔN HỌC';
+    sheet.getCell('A1').alignment = { horizontal: 'center' };
+    sheet.getCell('A1').font = { bold: true, size: 16 };
 
-    // ==== THÔNG TIN MÔN HỌC ====
-    worksheet.getCell('A3').value = `Môn: ${subjectText}`;
-    worksheet.getCell('C3').value = `Học kỳ: ${semesterText}`;
-    worksheet.getCell('A4').value = `Năm học: ${yearText}`;
+    sheet.getCell('A3').value = `Môn: ${subject}`;
+    sheet.getCell('C3').value = `Học kỳ: ${semester}`;
+    sheet.getCell('A4').value = `Năm học: ${year}`;
 
-    // ==== HEADER ====
-    const headerRow = worksheet.addRow(['STT', 'Lớp', 'Sĩ số', 'Số lượng đạt', 'Tỷ lệ']);
-    headerRow.font = { bold: true };
-    headerRow.alignment = { horizontal: 'center' };
-    headerRow.eachCell(cell => {
-        cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-        };
+    const headers = ['STT', 'Lớp', 'Sĩ số', 'Số lượng đạt', 'Tỷ lệ'];
+    const headerRow = sheet.addRow(headers);
+    formatHeaderRow(headerRow);
+
+    const rows = document.getElementById('table_result').rows;
+    for (let row of rows) {
+        const data = Array.from(row.cells).map(c => c.textContent);
+        const r = sheet.addRow(data);
+        r.alignment = { horizontal: 'center' };
+        addBorder(r);
+    }
+
+    sheet.columns.forEach(c => c.width = 15);
+
+    workbook.xlsx.writeBuffer().then(data => {
+        const blob = new Blob([data], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        saveAs(blob, `bao_cao_tong_ket_mon_${subject.replace(/\s+/g, '_')}.xlsx`);
+    });
+}
+
+function changeRule() {
+    const quantity = document.getElementById('quantity').value;
+    const minAge = document.getElementById('min_age').value;
+    const maxAge = document.getElementById('max_age').value;
+    const result = document.getElementById('result');
+
+    if (minAge >= maxAge) {
+        showAlert(result, 'danger', 'Tuổi nhỏ nhất phải nhỏ hơn tuổi lớn nhất');
+        return;
+    }
+
+    fetch("/api/changeRule", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity, min_age: minAge, max_age: maxAge })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const status = data.status === 200 ? 'success' : 'danger';
+        showAlert(result, status, data.content);
+
+        if (status === 'success') {
+            document.getElementById('current-quantity').textContent = quantity;
+            document.getElementById('current-min-age').textContent = minAge;
+            document.getElementById('current-max-age').textContent = maxAge;
+
+            setTimeout(() => result.innerHTML = '', 3000);
+        }
+    })
+    .catch(error => {
+        showAlert(result, 'danger', 'Có lỗi xảy ra khi cập nhật quy định');
+        console.error('Error:', error);
+    });
+}
+
+// === Tiện ích ===
+function rand() {
+    return Math.floor(Math.random() * 255);
+}
+
+function getText(id, prefix) {
+    return document.getElementById(id).textContent.replace(prefix, '');
+}
+
+function showAlert(el, type, message) {
+    el.innerHTML = `
+        <div class="alert alert-${type}">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}
+        </div>
+    `;
+}
+
+function formatHeaderRow(row) {
+    row.font = { bold: true };
+    row.alignment = { horizontal: 'center' };
+    row.eachCell(cell => {
+        cell.border = borderStyle();
         cell.fill = {
             type: 'pattern',
             pattern: 'solid',
             fgColor: { argb: 'FFD6EAF8' }
         };
     });
+}
 
-    // ==== DỮ LIỆU BẢNG ====
-    const table = document.getElementById('table_result');
-    const rows = table.rows;
-
-    for (let i = 0; i < rows.length; i++) {
-        const rowData = [];
-        for (let j = 0; j < rows[i].cells.length; j++) {
-            rowData.push(rows[i].cells[j].textContent);
-        }
-        const dataRow = worksheet.addRow(rowData);
-        dataRow.alignment = { horizontal: 'center' };
-        dataRow.eachCell(cell => {
-            cell.border = {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' }
-            };
-        });
-    }
-
-    // ==== TỰ ĐỘNG CĂN ĐỀU CỘT ====
-    worksheet.columns.forEach(column => {
-        column.width = 15;
-    });
-
-    // ==== XUẤT FILE ====
-    workbook.xlsx.writeBuffer().then((data) => {
-        const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        saveAs(blob, `bao_cao_tong_ket_mon_${subjectText.replace(/\s+/g, '_')}.xlsx`);
+function addBorder(row) {
+    row.eachCell(cell => {
+        cell.border = borderStyle();
     });
 }
 
-
-function changeRule(){
-        const quantity = document.getElementById('quantity').value;
-        const minAge = document.getElementById('min_age').value;
-        const maxAge = document.getElementById('max_age').value;
-
-        // Validate input
-        if (minAge >= maxAge) {
-            document.getElementById('result').innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i> Tuổi nhỏ nhất phải nhỏ hơn tuổi lớn nhất
-                </div>
-            `;
-            return;
-        }
-
-        fetch("/api/changeRule", {
-            method: "post",
-            body: JSON.stringify({
-                "quantity": quantity,
-                "min_age": minAge,
-                "max_age": maxAge
-            }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(function(res) {
-            return res.json();
-        }).then(function(data) {
-            const result = document.getElementById('result');
-            if(data.status === 200) {
-                result.innerHTML = `
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle"></i> ${data.content}
-                    </div>
-                `;
-
-                // Update current rules display
-                document.getElementById('current-quantity').textContent = quantity;
-                document.getElementById('current-min-age').textContent = minAge;
-                document.getElementById('current-max-age').textContent = maxAge;
-
-
-                // Clear message after 3 seconds
-                setTimeout(() => {
-                    result.innerHTML = '';
-                }, 3000);
-            } else {
-                result.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-circle"></i> ${data.content}
-                    </div>
-                `;
-            }
-        }).catch(error => {
-            document.getElementById('result').innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i> Có lỗi xảy ra khi cập nhật quy định
-                </div>
-            `;
-            console.error('Error:', error);
-        });
-    }
+function borderStyle() {
+    return {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+    };
+}

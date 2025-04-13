@@ -32,22 +32,14 @@ class StatsView(AuthenticatedAdmin):
 class ChangeRule(AuthenticatedAdmin):
     @expose("/")
     def index(self):
-        return self.render('admin/ChangeRule.html', quantity=app.config['soluong'],
-                           min_age=app.config['mintuoi'], max_age=app.config['maxtuoi'])
+        rule = Regulation.query.first()
+        return self.render(
+            'admin/ChangeRule.html',
+            quantity=rule.max_class_size if rule else 40,
+            min_age=rule.min_age if rule else 15,
+            max_age=rule.max_age if rule else 20
+        )
 
-
-# class SubjectView(Authenticated_Admin):
-#     column_list = ['id', 'name']
-#     column_searchable_list = ['name']
-#     column_filters = ['id', 'name']
-#     column_editable_list = ['name']  # Cho phép chỉnh trực tiếp trong bảng
-#     edit_modal = True  # Bật popup chỉnh sửa
-#     can_export = True
-#     can_create = True
-#     can_edit = True
-#     can_delete = True
-#
-#     list_template = 'admin/subject_view.html'
 
 class SubjectView(Authenticated_Admin):
     column_list = ['id', 'name']

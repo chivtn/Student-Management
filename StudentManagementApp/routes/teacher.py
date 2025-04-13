@@ -1,8 +1,7 @@
-#teacher.py
-from flask import Blueprint, render_template, request, send_file, redirect, url_for, flash
+from flask import Blueprint, render_template, request, send_file, redirect, url_for
 from flask_login import current_user, login_required
 from StudentManagementApp import db
-from StudentManagementApp.models import Teacher, Classroom, Student, Subject, Semester
+from StudentManagementApp.models import Teacher, Classroom, Student, Semester
 from StudentManagementApp.dao import score_service, export_score_service
 
 teacher = Blueprint('teacher', __name__, url_prefix='/teacher')
@@ -87,6 +86,7 @@ def view_class_detail(class_id):
 @login_required
 def select_for_grading():
     teacher_obj = Teacher.query.filter_by(id=current_user.id).first()
+    subject = teacher_obj.subject
     classes = teacher_obj.classrooms
     semesters = Semester.query.all()
 
@@ -101,23 +101,27 @@ def select_for_grading():
         selected_class = Classroom.query.get_or_404(class_id)
         selected_semester = Semester.query.get_or_404(semester_id)
         academic_year = selected_class.academic_year
-        subject_id = teacher_obj.subject.id
+        subject_id = subject.id
 
         students = Student.query.filter_by(classroom_id=class_id).all()
 
+        # Lưu điểm chính thức
         if 'save_scores' in request.form:
             score_service.store_scores(
                 request.form, students, academic_year, semester_id, subject_id
             )
             db.session.commit()
 
+        # Lưu nháp
         elif 'draft' in request.form:
             score_service.save_draft_scores(
                 request.form, students, academic_year, semester_id, subject_id
             )
             db.session.commit()
 
-        scores_map = score_service.fetch_scores_for_students(students, academic_year, semester_id, subject_id)
+        scores_map = score_service.fetch_scores_for_students(
+            students, academic_year, semester_id, subject_id
+        )
 
     return render_template(
         'teacher/select_grading.html',
@@ -127,5 +131,6 @@ def select_for_grading():
         selected_semester=selected_semester,
         students=students,
         scores_map=scores_map,
+        subject=subject,  # truyền sang để giới hạn số cột nhập điểm theo đúng quy định
         message=message
     )

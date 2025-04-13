@@ -1,7 +1,13 @@
 # score_service.py
 from StudentManagementApp import db
-from StudentManagementApp.models import ScoreSheet, ScoreDetail, DraftScore, ScoreType
+from StudentManagementApp.models import ScoreSheet, ScoreDetail, DraftScore, ScoreType, Subject, Student
 import re
+
+def get_score_limits(subject_id):
+    subject = Subject.query.get(subject_id)
+    if subject:
+        return subject.score15P_column_number or 0, subject.score1T_column_number or 0
+    return 0, 0
 
 def fetch_scores_for_students(students, academic_year, semester_id, subject_id):
     scores_map = {}
@@ -85,13 +91,14 @@ def save_draft_scores(form_data, students, academic_year, semester_id, subject_i
         ).delete()
 
         draft_scores = []
+        max_15, max_1t = get_score_limits(subject_id)
         draft_scores.extend(extract_unique_scores(
             form_data, student.id, subject_id, semester_id, academic_year,
-            '15', ScoreType.FIFTEEN_MIN, 5
+            '15', ScoreType.FIFTEEN_MIN, max_15
         ))
         draft_scores.extend(extract_unique_scores(
             form_data, student.id, subject_id, semester_id, academic_year,
-            '1tiet', ScoreType.ONE_PERIOD, 3
+            '1tiet', ScoreType.ONE_PERIOD, max_1t
         ))
 
         final_key = f'score_final_{student.id}'
@@ -144,22 +151,31 @@ def delete_draft_scores(student_id, subject_id, semester_id, academic_year):
 def get_or_create_score_sheet(student_id, subject_id, semester_id, academic_year):
     sheet = get_score_sheet(student_id, subject_id, semester_id, academic_year)
     if not sheet:
+        student = Student.query.get(student_id)
+
+        # Kiểm tra nếu student không có classroom_id thì raise lỗi rõ ràng
+        if not student.classroom_id:
+            raise ValueError(f"Student ID {student_id} không có classroom_id. Vui lòng kiểm tra dữ liệu.")
+
         sheet = ScoreSheet(
             student_id=student_id,
             subject_id=subject_id,
             semester_id=semester_id,
-            academic_year=academic_year
+            academic_year=academic_year,
+            classroom_id=student.classroom_id
         )
         db.session.add(sheet)
         db.session.flush()
     return sheet
 
+
 def save_score_details(sheet, form_data, student_id):
     ScoreDetail.query.filter_by(score_sheet_id=sheet.id).delete()
 
-    for val in extract_score_values(form_data, student_id, '15', 5):
+    max_15, max_1t = get_score_limits(sheet.subject_id)
+    for val in extract_score_values(form_data, student_id, '15', max_15):
         db.session.add(ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FIFTEEN_MIN, value=val))
-    for val in extract_score_values(form_data, student_id, '1tiet', 3):
+    for val in extract_score_values(form_data, student_id, '1tiet', max_1t):
         db.session.add(ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.ONE_PERIOD, value=val))
 
     final_key = f'score_final_{student_id}'

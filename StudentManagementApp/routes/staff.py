@@ -1,3 +1,4 @@
+#staff.py
 from flask import render_template, request, redirect, session, jsonify, Blueprint
 from flask_login import login_user, current_user, logout_user, login_required
 from StudentManagementApp import app, db, login
@@ -19,7 +20,6 @@ def AddStudent():
     grades = dao.get_grade()
     return render_template('staff/AddStudent.html', students=students, grades=grades)
 
-
 @staff.route("/ThemHocSinh", methods=['POST'])
 def ThemHocSinh():
     err_msg = ''
@@ -30,26 +30,22 @@ def ThemHocSinh():
     phone = request.form.get('phonenumber')
     email = request.form.get('email')
     grade_id = request.form.get('grade')
-    grades = dao.get_grade()  # luôn load danh sách khối
+    grades = dao.get_grade()
 
-    # Kiểm tra số điện thoại
     if not phone or len(phone) != 10 or not phone.isdigit():
         err_msg = 'Số điện thoại sai. Vui lòng nhập lại!'
         return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
 
-    # Kiểm tra email
     if not email.endswith('@gmail.com'):
         err_msg = 'Email sai. Vui lòng nhập lại!'
         return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
 
-    # Kiểm tra ngày sinh
     try:
         birth_date = datetime.strptime(DoB, '%Y-%m-%d')
     except:
         err_msg = 'Bạn chưa nhập ngày sinh. Vui lòng thử lại!'
         return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
 
-    # Kiểm tra độ tuổi theo quy định
     current_year = datetime.now().year
     min_age = dao.get_regulation_value("min_age")
     max_age = dao.get_regulation_value("max_age")
@@ -59,11 +55,10 @@ def ThemHocSinh():
         err_msg = f'Ngày sinh không hợp lệ. Tuổi phải từ {min_age} đến {max_age}.'
         return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
 
-    # Thêm học sinh
     try:
         student = Student(
             name=fullname,
-            gender=Gender[gender],  # gender là string: "MALE" hoặc "FEMALE"
+            gender=Gender[gender],
             birth_date=birth_date,
             address=address,
             phone=phone,
@@ -77,7 +72,6 @@ def ThemHocSinh():
         db.session.rollback()
         err_msg = f"Lỗi khi lưu học sinh: {str(e)}"
         return render_template('staff/AddStudent.html', err_msg=err_msg, grades=grades)
-
 
 @staff.route("/api/searchStudentAddStu", methods=['POST'])
 def search_student_add_stu():
@@ -159,12 +153,10 @@ def PrintClass():
 
 @staff.route("/AdjustClass")
 def AdjustClass():
-   # return render_template("staff/AdjustClass.html", classes=dao.get_all_classrooms(), grades=dao.get_grade())
     return render_template("staff/AdjustClass.html",
-                           classes=dao.get_all_classrooms(),  # thêm dòng này nếu thiếu
+                           classes=dao.get_all_classrooms(),
                            grades=dao.get_grade(),
                            max_per_class=dao.get_regulation_value("max_class_size"))
-
 
 @staff.route('/change_class', methods=['POST'])
 def change_class():

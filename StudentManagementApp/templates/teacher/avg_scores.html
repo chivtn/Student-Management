@@ -3,6 +3,7 @@
 {% block content %}
 <div class="container py-4">
     <div class="card border-0 shadow-lg rounded-4">
+        <!-- Tiêu đề + nút xuất Excel -->
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center rounded-top-4 px-4 py-3">
             <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Xuất điểm trung bình</h5>
             {% if selected_class and selected_year %}
@@ -12,6 +13,8 @@
             </a>
             {% endif %}
         </div>
+
+        <!-- Form chọn lớp, năm học, học kỳ -->
         <div class="card-body px-4 py-4">
             <form method="GET" action="{{ url_for('teacher.view_avg_scores') }}" class="row g-3 align-items-end mb-4">
                 <div class="col-md-4">
@@ -48,19 +51,22 @@
                 </div>
             </form>
 
+            <!-- Bảng hiển thị điểm trung bình -->
             {% if scores %}
             <div class="table-responsive">
-                <table class="table table-bordered table-hover rounded overflow-hidden shadow-sm">
+                <table id="avgScoreTable" class="table table-bordered table-hover rounded overflow-hidden shadow-sm">
                     <thead class="table-primary text-center align-middle">
                         <tr>
                             <th style="width: 60px;">STT</th>
                             <th class="text-start">Họ và tên</th>
                             {% if selected_semester %}
-                                <th>Điểm TB học kỳ {{ selected_semester }}</th>
+                                <!-- Cột có thể sắp xếp: Điểm TB học kỳ -->
+                                <th class="sortable text-center" onclick="sortTableByColumn('avgScoreTable', 2)">Điểm TB học kỳ {{ selected_semester }}</th>
                             {% else %}
-                                <th>Điểm TB HK1</th>
-                                <th>Điểm TB HK2</th>
-                                <th>TB Cả năm</th>
+                                <!-- Các cột có thể sắp xếp: HK1, HK2, Cả năm -->
+                                <th class="sortable text-center" onclick="sortTableByColumn('avgScoreTable', 2)">Điểm TB HK1</th>
+                                <th class="sortable text-center" onclick="sortTableByColumn('avgScoreTable', 3)">Điểm TB HK2</th>
+                                <th class="sortable text-center" onclick="sortTableByColumn('avgScoreTable', 4)">TB Cả năm</th>
                             {% endif %}
                         </tr>
                     </thead>
@@ -82,6 +88,7 @@
                 </table>
             </div>
             {% else %}
+            <!-- Hiển thị khi không có dữ liệu -->
             <div class="alert alert-info text-center shadow-sm mt-4">
                 <i class="fas fa-info-circle me-2"></i> Chưa có dữ liệu để hiển thị.
             </div>
@@ -89,4 +96,26 @@
         </div>
     </div>
 </div>
+
+<!-- Script xử lý sắp xếp các cột điểm trung bình -->
+<script>
+function sortTableByColumn(tableId, columnIndex) {
+    const table = document.getElementById(tableId);
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+
+    const isAsc = table.getAttribute("data-sort-dir") !== "asc";
+    table.setAttribute("data-sort-dir", isAsc ? "asc" : "desc");
+
+    rows.sort((a, b) => {
+        const aText = a.children[columnIndex].textContent.trim();
+        const bText = b.children[columnIndex].textContent.trim();
+        const aVal = parseFloat(aText) || 0;
+        const bVal = parseFloat(bText) || 0;
+        return isAsc ? aVal - bVal : bVal - aVal;
+    });
+
+    rows.forEach(row => tbody.appendChild(row));
+}
+</script>
 {% endblock %}

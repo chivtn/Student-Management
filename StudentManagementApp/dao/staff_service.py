@@ -1,9 +1,6 @@
-#staff.service
-import random
-import hashlib
+#staff_service.py
 from StudentManagementApp.models import *
-from StudentManagementApp import app, db
-from sqlalchemy import func
+from StudentManagementApp import db
 
 # --- AUTH ---
 def get_user_by_id(user_id):
@@ -36,7 +33,8 @@ def get_classrooms_by_gradelevel(gradelevel_id):
     return Classroom.query.filter_by(gradelevel_id=gradelevel_id).all()
 
 def get_blank_classrooms():
-    return [c for c in Classroom.query.all() if len(c.students) < app.config['soluong']]
+    max_size = get_regulation_value("max_class_size")
+    return [c for c in Classroom.query.all() if len(c.students) < max_size]
 
 # --- STUDENTS ---
 def get_all_students():
@@ -46,15 +44,10 @@ def get_student_by_id(student_id):
     return Student.query.get(student_id)
 
 def get_student_by_class(classroom_id):
-   # return Student.query.filter(Student.classroom_id == classroom_id).all()
-    #return Student.query.filter(Student.classroom_id.__eq__(classroom_id)).all()
-   return Student.query.filter_by(classroom_id=classroom_id).all()
-
+    return Student.query.filter_by(classroom_id=classroom_id).all()
 
 def get_students_by_gradelevel(grade_id):
-   # return Student.query.filter_by(grade_id=grade_id).all()
-    #return Student.query.filter(Student.grade_id.__eq__(grade_id)).all()
-   return Student.query.filter_by(grade_id=grade_id).all()
+    return Student.query.filter_by(grade_id=grade_id).all()
 
 def search_students_by_name(name, classroom_id=None):
     query = Student.query.filter(Student.name.ilike(f"%{name}%"))
@@ -67,7 +60,6 @@ def get_subject():
     return Subject.query.all()
 
 def get_subject_by_id(subject_id):
-    #return Subject.query.filter(Subject.id == subject_id).first()
     return Subject.query.get(subject_id)
 
 # --- SEMESTERS ---
@@ -75,7 +67,6 @@ def get_semester():
     return Semester.query.all()
 
 def get_semester_by_id(semester_id):
-    #return Semester.query.filter(Semester.id == semester_id).first()
     return Semester.query.get(semester_id)
 
 # --- GRADELEVELS ---
@@ -86,7 +77,6 @@ def get_grade():
 def create_class_list():
     grades = get_grade()
     unassigned_students = {g.id: [] for g in grades}
-  #  max_per_class = app.config['soluong']
 
     for g in grades:
         students = get_students_by_gradelevel(g.id)

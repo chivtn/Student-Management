@@ -1,4 +1,4 @@
-#stat.service
+#stat_service.py
 import random
 import hashlib
 from sqlalchemy import func
@@ -45,7 +45,8 @@ def statistics_subject(classroom_id, subject_id, semester_id):
         total_weight = a_count + b_count * 2 + c_count * 3
         if total_weight > 0:
             avg = (a_sum + b_sum * 2 + c_sum * 3) / total_weight
-            scores[sid]['score'] = round(avg, 1)
+            if sid in scores:
+                scores[sid]['score'] = round(avg, 1)
 
     return list(scores.values())
 

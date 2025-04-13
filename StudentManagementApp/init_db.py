@@ -1,8 +1,7 @@
-from StudentManagementApp import app, db
+from StudentManagementApp import app
 from StudentManagementApp.models import *
 from faker import Faker
 from werkzeug.security import generate_password_hash
-from datetime import date
 import random
 
 fake = Faker('vi_VN')
@@ -12,7 +11,8 @@ with app.app_context():
     db.create_all()
 
     # --- Quy định ---
-    db.session.add(Regulation(min_age=15, max_age=20, max_class_size=40))
+    rule = Regulation(min_age=15, max_age=20, max_class_size=40)
+    db.session.add(rule)
 
     # --- Khối lớp ---
     grade10 = GradeLevel(id=1, name=Grade.GRADE_10)
@@ -36,20 +36,23 @@ with app.app_context():
     db.session.flush()
 
     # --- Người dùng ---
-    admin = User(id=1, name='Quản trị viên', username='admin', password=generate_password_hash('admin123'),role=Role.ADMIN)
+    admin = User(id=1, name='Quản trị viên', username='admin', password=generate_password_hash('admin123'), role=Role.ADMIN)
     teacher = User(id=2, name='Giáo viên A', username='teacher1', password=generate_password_hash('teacher123'), role=Role.TEACHER)
-    staff = User(id=3, name='Nhân viên B', username='staff1', password=generate_password_hash('staff123'),role=Role.STAFF)
+    staff = User(id=3, name='Nhân viên B', username='staff1', password=generate_password_hash('staff123'), role=Role.STAFF)
 
     db.session.add_all([admin, teacher, staff])
+    db.session.flush()
 
     db.session.add_all([
-        Admin(id=1),
-        Teacher(id=2, name=teacher.name, subject_id=subjects[0].id),
-        Staff(id=3)
+        Admin(id=admin.id),
+        Teacher(id=teacher.id, name=teacher.name, subject_id=subjects[0].id),  # Dạy môn Toán
+        Staff(id=staff.id)
     ])
+    db.session.flush()
 
     # --- Học kỳ ---
     db.session.add_all([Semester(name='Học kỳ 1'), Semester(name='Học kỳ 2')])
+    db.session.flush()
 
     # --- Lớp học (2 lớp mỗi khối) ---
     class_map = {}
@@ -61,11 +64,16 @@ with app.app_context():
             db.session.flush()
             class_map[grade.id].append(c)
 
-    # //--- Tạo dữ liệu giả cho 30 học sinh mỗi khối, không phân lớp tự động
+    # --- Gán lớp cho giáo viên A ---
+    teacher_obj = db.session.get(Teacher, 2)
+    for c in class_map[grade10.id]:  # Dạy 2 lớp khối 10
+        teacher_obj.classrooms.append(c)
+
+    # --- Học sinh (40 mỗi khối, chia đều vào A1, A2) ---
     students = []
     for grade in [grade10, grade11, grade12]:
         for i in range(40):
-            classroom = class_map[grade.id][i % 2]  # chia đều vào A1, A2
+            classroom = class_map[grade.id][i % 2]
             s = Student(
                 name=fake.name(),
                 gender=random.choice([Gender.MALE, Gender.FEMALE]),
@@ -78,14 +86,11 @@ with app.app_context():
             )
             students.append(s)
     db.session.add_all(students)
+    db.session.flush()
 
-    # --- Tạo ScoreSheet mẫu cho mỗi học sinh nếu có lớp
+    # --- ScoreSheet cho mỗi học sinh ---
     semesters = Semester.query.all()
-
     for student in students:
-        if student.classroom_id is None:
-            continue  # Bỏ qua học sinh chưa gán lớp
-
         for semester in semesters:
             for subject in subjects:
                 if subject.gradelevel_id == student.grade_id:
@@ -94,14 +99,14 @@ with app.app_context():
                         subject_id=subject.id,
                         semester_id=semester.id,
                         academic_year="2024-2025",
-                        classroom_id=student.classroom_id  # ✅ Bắt buộc có dòng này
+                        classroom_id=student.classroom_id
                     )
                     db.session.add(sheet)
+    db.session.flush()
 
-    # --- Điểm mẫu cho mỗi ScoreSheet ---
+    # --- Điểm mẫu ---
     score_sheets = ScoreSheet.query.all()
     for sheet in score_sheets:
-        # Tạo 3 điểm 15p, 2 điểm 1 tiết và 1 điểm cuối kỳ
         db.session.add_all([
             ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FIFTEEN_MIN, value=random.uniform(5, 10)),
             ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FIFTEEN_MIN, value=random.uniform(4, 10)),

@@ -1,3 +1,4 @@
+#__init__.py
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -7,11 +8,9 @@ app.secret_key = 'GHFGH&*%^$^*(JHFGHF&Y*R%^$%$^&*TGYGJHFHGVJHGY'
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:askme@localhost:3306/studentdb?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-app.config['soluong'] = 40
-app.config['maxtuoi'] = 20
-app.config['mintuoi'] = 15
 app.config['nambatdau'] = 2025
 
+# Khởi tạo DB
 db = SQLAlchemy(app)
 login = LoginManager(app)
 login.login_view = 'login'
@@ -31,3 +30,4 @@ from StudentManagementApp.routes.staff import staff
 app.register_blueprint(staff)
 app.register_blueprint(teacher)
 #app.register_blueprint(admin)
+from StudentManagementApp import admin_view
