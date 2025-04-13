@@ -206,13 +206,38 @@ function changeClass() {
     .then(data => {
         const resultDiv = document.getElementById('changeClassResult');
         if (data.success) {
+            // Cập nhật số lượng lớp cũ
+            if (data.old_class.id) {
+                const oldClassBtn = document.querySelector(`.class-option[data-class-id="${data.old_class.id}"]`);
+                if (oldClassBtn) {
+                    oldClassBtn.textContent = `${data.old_class.name} (${data.old_class.current_student}/${data.max_per_class})`;
+                    if (data.old_class.current_student >= data.max_per_class) {
+                        oldClassBtn.classList.add('disabled');
+                    } else {
+                        oldClassBtn.classList.remove('disabled');
+                    }
+                }
+            }
+
+            // Cập nhật số lượng lớp mới
+            const newClassBtn = document.querySelector(`.class-option[data-class-id="${data.new_class.id}"]`);
+            if (newClassBtn) {
+                newClassBtn.textContent = `${data.new_class.name} (${data.new_class.current_student}/${data.max_per_class})`;
+                if (data.new_class.current_student >= data.max_per_class) {
+                    newClassBtn.classList.add('disabled');
+                } else {
+                    newClassBtn.classList.remove('disabled');
+                }
+            }
+
+            // Reset các phần khác
             resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
             document.getElementById('studentName').innerText = "Chưa chọn học sinh";
             document.getElementById('btnChangeClass').disabled = true;
             selectedStudent = null;
             selectedClassId = null;
             document.querySelectorAll('.class-option').forEach(btn => btn.classList.remove('active'));
-            searchStudent();
+            searchStudent(); // Tải lại danh sách học sinh
         } else {
             resultDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
         }

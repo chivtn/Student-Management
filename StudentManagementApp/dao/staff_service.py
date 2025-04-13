@@ -86,7 +86,6 @@ def get_grade():
 def create_class_list():
     grades = get_grade()
     unassigned_students = {g.id: [] for g in grades}
-  #  max_per_class = app.config['soluong']
 
     for g in grades:
         students = get_students_by_gradelevel(g.id)

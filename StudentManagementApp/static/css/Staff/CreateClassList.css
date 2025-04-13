@@ -218,3 +218,9 @@ i {
         font-size: 1.5rem; /* Giảm kích thước chữ trên mobile */
     }
 }
+/* Thêm vào cuối file */
+#print_class.container {
+    padding: 0;
+    margin: 20px auto; /* Căn giữa và tạo khoảng cách hợp lý */
+    max-width: 95%; /* Giới hạn chiều rộng */
+}
