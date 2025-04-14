@@ -124,11 +124,5 @@ with app.app_context():
             ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FINAL, value=random.uniform(5, 10)),
         ])
 
-    # --- Phụ huynh mẫu ---
-    db.session.add_all([
-        Parent(name=fake.name(), phone=fake.phone_number(), relation=Relationship.FATHER, student=students[0]),
-        Parent(name=fake.name(), phone=fake.phone_number(), relation=Relationship.MOTHER, student=students[1]),
-    ])
-
     db.session.commit()
     print("✅ Cơ sở dữ liệu và dữ liệu mẫu đã được khởi tạo thành công.")

@@ -23,11 +23,6 @@ class Grade(enum):
     GRADE_11 = "11"
     GRADE_12 = "12"
 
-class Relationship(enum):
-    FATHER = "Cha"
-    MOTHER = "Mẹ"
-    GUARDIAN = "Người giám hộ"
-
 class ScoreType(enum):
     FIFTEEN_MIN = "Điểm 15 phút"
     ONE_PERIOD = "Điểm 1 tiết"
@@ -87,7 +82,6 @@ class Teacher(db.Model):
     id = Column(Integer, ForeignKey('user.id'), primary_key=True)
     name = Column(String(100), nullable=False)
     subject_id = Column(Integer, ForeignKey('subject.id'), nullable=False)
-    start_date = Column(DateTime, nullable=True)
 
     subject = relationship('Subject', backref='teachers')
     user = relationship('User', backref='teacher_profile')
@@ -110,16 +104,6 @@ class Student(db.Model):
     gradelevel = relationship("GradeLevel", backref="students", lazy = True)
     score_sheets = relationship('ScoreSheet', backref='student', lazy=True)
     draft_scores = relationship('DraftScore', backref='student', lazy=True)
-
-class Parent(db.Model):
-    __tablename__ = 'parent'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), nullable=False)
-    phone = Column(String(15), nullable=False)
-    relation = Column(Enum(Relationship))
-    student_id = Column(Integer, ForeignKey('student.id'))
-
-    student = relationship('Student', backref='parent')
 
 class Semester(db.Model):
     __tablename__ = 'semester'
@@ -206,8 +190,3 @@ class Regulation(db.Model):
     max_age = Column(Integer, default=20)
     max_class_size = Column(Integer, default=40)
 
-# student_subject = Table(
-#     'student_subject',
-#     Column('id_student', Integer, ForeignKey('student.id'), primary_key=True),
-#     Column('id_subject', Integer, ForeignKey('subject.id'), primary_key=True)
-# )
