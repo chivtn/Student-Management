@@ -181,7 +181,6 @@ def change_class():
     if not student or not new_class:
         return jsonify({"success": False, "message": "Học sinh hoặc lớp không tồn tại"}), 404
 
-    # TH1: Kiểm tra nếu đang chọn lớp hiện tại
     if student.classroom_id == new_class.id:
         return jsonify({"success": False, "message": "Học sinh đã thuộc lớp này"}), 400
 
