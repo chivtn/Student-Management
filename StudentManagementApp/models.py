@@ -71,7 +71,7 @@ class Classroom(db.Model):
     gradelevel = relationship('GradeLevel', backref='classrooms')
     students = relationship('Student', backref='classroom', lazy=True)
     teachers = relationship('Teacher', secondary='teacher_classroom', back_populates='classrooms')
-
+    academic_year = relationship('AcademicYear', back_populates='classrooms')
 
     @property
     def current_student(self):
@@ -122,7 +122,8 @@ class AcademicYear(db.Model):
     end_year = Column(Integer, nullable=False)
     is_active = Column(db.Boolean, default=True)
 
-    classrooms = relationship('Classroom', backref='academic_year_obj', lazy=True)
+
+    classrooms = relationship('Classroom', back_populates='academic_year', lazy=True)
     scoresheets = relationship('ScoreSheet', backref='academic_year_obj', lazy=True)
     draft_scores = relationship('DraftScore', backref='academic_year_obj', lazy=True)
 
