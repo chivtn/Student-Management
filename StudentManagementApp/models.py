@@ -47,11 +47,15 @@ class User(db.Model, UserMixin):
 class Admin(db.Model):
     __tablename__ = 'admin'
     id = Column(Integer, ForeignKey('user.id'), primary_key=True)
+    admin_code = Column(String(20), unique=True, nullable=True)
+
     user = relationship('User', backref='admin_profile')
 
 class Staff(db.Model):
     __tablename__ = 'staff'
     id = Column(Integer, ForeignKey('user.id'), primary_key=True)
+    staff_code = Column(String(20), unique=True, nullable=True)
+
     user = relationship('User', backref='staff_profile')
 
 # ========== CORE MODELS ==========
@@ -80,7 +84,8 @@ class Classroom(db.Model):
 class Teacher(db.Model):
     __tablename__ = 'teacher'
     id = Column(Integer, ForeignKey('user.id'), primary_key=True)
-    name = Column(String(100), nullable=False)
+    teacher_code = Column(String(20), unique=True, nullable=True)
+
     subject_id = Column(Integer, ForeignKey('subject.id'), nullable=False)
 
     subject = relationship('Subject', backref='teachers')

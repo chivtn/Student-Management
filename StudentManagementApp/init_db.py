@@ -4,6 +4,8 @@ from StudentManagementApp.models import *
 from faker import Faker
 from werkzeug.security import generate_password_hash
 import random
+from StudentManagementApp.utils import generate_admin_code, generate_staff_code, generate_teacher_code
+
 
 fake = Faker('vi_VN')
 
@@ -15,7 +17,6 @@ with app.app_context():
     rule = Regulation(min_age=15, max_age=20, max_class_size=40)
     db.session.add(rule)
 
-    # --- Năm học ---
     # --- Năm học ---
     year_2024 = AcademicYear(start_year=2024, end_year=2025, is_active=True)
     db.session.add(year_2024)
@@ -50,9 +51,9 @@ with app.app_context():
     db.session.flush()
 
     db.session.add_all([
-        Admin(id=admin.id),
-        Teacher(id=teacher.id, name=teacher.name, subject_id=subjects[0].id),  # Dạy môn Toán
-        Staff(id=staff.id)
+        Admin(id=admin.id, admin_code=generate_admin_code()),
+        Teacher(id=teacher.id, teacher_code=generate_teacher_code(), subject_id=subjects[0].id),
+        Staff(id=staff.id, staff_code=generate_staff_code())
     ])
     db.session.flush()
 
