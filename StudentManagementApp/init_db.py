@@ -4,8 +4,6 @@ from StudentManagementApp.models import *
 from faker import Faker
 from werkzeug.security import generate_password_hash
 import random
-from StudentManagementApp.utils import generate_admin_code, generate_staff_code, generate_teacher_code
-
 
 fake = Faker('vi_VN')
 
@@ -51,9 +49,9 @@ with app.app_context():
     db.session.flush()
 
     db.session.add_all([
-        Admin(id=admin.id, admin_code=generate_admin_code()),
-        Teacher(id=teacher.id, teacher_code=generate_teacher_code(), subject_id=subjects[0].id),
-        Staff(id=staff.id, staff_code=generate_staff_code())
+        Admin(id=admin.id),
+        Teacher(id=teacher.id, subject_id=subjects[0].id),
+        Staff(id=staff.id)
     ])
     db.session.flush()
 
