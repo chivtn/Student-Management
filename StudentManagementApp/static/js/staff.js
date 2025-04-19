@@ -6,6 +6,60 @@ let selectedStudent = null
 let selectedClassId = null
 
 // ✅ Thêm học sinh
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("add-student-form");
+    if (!form) return;
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+
+        fetch("/staff/ThemHocSinh", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            const alertSuccess = `<div class="alert alert-success">${data.message}</div>`;
+            const alertFail = `<div class="alert alert-danger">${data.error}</div>`;
+            const alertContainer = document.querySelector(".card-body .alert");
+            if (alertContainer) alertContainer.remove();
+
+            if (data.success) {
+                form.insertAdjacentHTML("afterbegin", alertSuccess);
+                form.reset();
+
+                const tbody = document.getElementById("list-student");
+                const rowCount = tbody.querySelectorAll("tr").length + 1;
+                const stu = data.student;
+                const row = `
+                    <tr>
+                        <td>${rowCount}</td>
+                        <td>${stu.name}</td>
+                        <td>${stu.sex}</td>
+                        <td>${stu.DoB}</td>
+                        <td>${stu.address || ''}</td>
+                        <td>${stu.email}</td>
+                        <td>${stu.phonenumber || ''}</td>
+                        <td>Khối ${stu.grade}</td>
+                        <td><button class="btn btn-danger btn-sm" onclick="deleteStudent(${stu.id})">Xóa</button></td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML("beforeend", row);
+            } else {
+                form.insertAdjacentHTML("afterbegin", alertFail);
+            }
+
+            setTimeout(() => {
+                const alert = document.querySelector(".card-body .alert");
+                if (alert) alert.remove();
+            }, 3000);
+        });
+    });
+});
+
+
 function handleSearch() {
     const searchTerm = document.getElementById('searchInput').value;
     const gradeId = document.getElementById('filterGradeAdd').value;
@@ -18,6 +72,7 @@ function handleSearch() {
     .then(res => res.json())
     .then(data => renderResults(data));
 }
+
 
 function showAllStudents() {
     const gradeId = document.getElementById('filterGradeAdd').value;
@@ -257,55 +312,4 @@ setTimeout(() => {
         });
     }, 3000);
 
-document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById("add-student-form");
-    if (!form) return;
 
-    form.addEventListener("submit", function(e) {
-        e.preventDefault();
-
-        const formData = new FormData(form);
-
-        fetch("/staff/ThemHocSinh", {
-            method: "POST",
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            const alertSuccess = `<div class="alert alert-success">${data.message}</div>`;
-            const alertFail = `<div class="alert alert-danger">${data.error}</div>`;
-            const alertContainer = document.querySelector(".card-body .alert");
-            if (alertContainer) alertContainer.remove();
-
-            if (data.success) {
-                form.insertAdjacentHTML("afterbegin", alertSuccess);
-                form.reset();
-
-                const tbody = document.getElementById("list-student");
-                const rowCount = tbody.querySelectorAll("tr").length + 1;
-                const stu = data.student;
-                const row = `
-                    <tr>
-                        <td>${rowCount}</td>
-                        <td>${stu.name}</td>
-                        <td>${stu.sex}</td>
-                        <td>${stu.DoB}</td>
-                        <td>${stu.address || ''}</td>
-                        <td>${stu.email}</td>
-                        <td>${stu.phonenumber || ''}</td>
-                        <td>Khối ${stu.grade}</td>
-                        <td><button class="btn btn-danger btn-sm" onclick="deleteStudent(${stu.id})">Xóa</button></td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML("beforeend", row);
-            } else {
-                form.insertAdjacentHTML("afterbegin", alertFail);
-            }
-
-            setTimeout(() => {
-                const alert = document.querySelector(".card-body .alert");
-                if (alert) alert.remove();
-            }, 3000);
-        });
-    });
-});

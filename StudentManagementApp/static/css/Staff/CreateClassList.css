@@ -1,226 +1,67 @@
-/* Tổng quan giao diện */
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f7fa; /* Nền nhẹ nhàng */
-}
-
-/* Container chính */
-.container-fluid {
-    padding: 0 15px;
-}
-
-/* Card */
-.card {
-    border-radius: 12px; /* Bo góc mềm hơn */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Đổ bóng sâu hơn */
-    transition: transform 0.2s ease;
-    margin-bottom: 20px; /* Tăng khoảng cách dưới */
-}
-.card:hover {
-    transform: translateY(-5px); /* Hiệu ứng nâng lên khi hover */
-}
-
-/* Card header cho từng khối */
-.card-header.grade-1 { /* Khối 10 - Hot Pink */
-    background-color: rgb(255, 105, 180);
-    color: white; /* Màu trắng giống button */
-    border-bottom: 2px solid rgb(218, 44, 138);
-    transition: background-color 0.3s ease;
-    text-align: center; /* Căn giữa */
-    padding: 12px; /* Thêm padding cho thoáng */
-    border-radius: 12px 12px 0 0; /* Bo góc trên */
-}
-.card-header.grade-1:hover {
-    background-color: rgb(255, 20, 147);
-}
-.card-header.grade-1 h5 {
-    font-size: 1.8rem; /* Tăng kích thước chữ */
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Đổ bóng nhẹ cho chữ */
-    margin: 0;
-}
-
-.card-header.grade-2 { /* Khối 11 - Lime Green */
-    background-color: rgb(50, 205, 50);
-    color: white; /* Màu trắng giống button */
-    border-bottom: 2px solid rgb(34, 139, 34);
-    transition: background-color 0.3s ease;
-    text-align: center; /* Căn giữa */
-    padding: 12px; /* Thêm padding cho thoáng */
-    border-radius: 12px 12px 0 0; /* Bo góc trên */
-}
-.card-header.grade-2:hover {
-    background-color: rgb(0, 128, 0);
-}
-.card-header.grade-2 h5 {
-    font-size: 1.8rem; /* Tăng kích thước chữ */
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Đổ bóng nhẹ cho chữ */
-    margin: 0;
-}
-
-.card-header.grade-3 { /* Khối 12 - Medium Purple */
-    background-color: rgb(147, 112, 219);
-    color: white; /* Màu trắng giống button */
-    border-bottom: 2px solid rgb(106, 90, 205);
-    transition: background-color 0.3s ease;
-    text-align: center; /* Căn giữa */
-    padding: 12px; /* Thêm padding cho thoáng */
-    border-radius: 12px 12px 0 0; /* Bo góc trên */
-}
-.card-header.grade-3:hover {
-    background-color: rgb(123, 104, 238);
-}
-.card-header.grade-3 h5 {
-    font-size: 1.8rem; /* Tăng kích thước chữ */
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Đổ bóng nhẹ cho chữ */
-    margin: 0;
-}
-
-/* Xóa định nghĩa mặc định không cần thiết */
-.card-header h5 {
-    /* Đã được định nghĩa riêng cho từng grade, không cần ở đây nữa */
-}
-
-/* Lưới các nút lớp */
 .class-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 cột */
-    gap: 12px; /* Tăng khoảng cách giữa các nút */
-    margin: 15px; /* Tăng lề trong card */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    padding: 12px;
+}
+
+/* Màu header theo khối */
+.grade-1 .card-header {
+    background-color: #a5d6a7 !important; /* Xanh lá đậm */
+    border-bottom: 2px solid #81c784;
+}
+.grade-2 .card-header {
+    background-color: #bbdefb !important;
+    border-bottom: 2px solid #64b5f6;
+}
+.grade-3 .card-header {
+    background-color: #ffe0b2 !important;
+    border-bottom: 2px solid #ffb74d;
 }
 
 /* Nút lớp học */
 .class-button {
-    border-radius: 8px; /* Bo góc mềm hơn */
-    font-size: 0.95rem; /* Tăng nhẹ kích thước chữ */
-    padding: 8px 14px; /* Tăng padding cho nút rộng hơn */
-    transition: all 0.3s ease;
-    text-align: center;
-    height: 55px; /* Tăng chiều cao nút */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    white-space: normal;
-    line-height: 1.3;
-    border: none;
-    color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
-}
-.grade-1 .class-button { /* Khối 10 - Hot Pink */
-    background-color: rgb(255, 105, 180);
-}
-.grade-1 .class-button:hover {
-    background-color: rgb(255, 20, 147);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Đổ bóng sâu hơn khi hover */
-}
-.grade-1 .class-button.active {
-    background-color: rgb(218, 44, 138);
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    transition: all 0.2s;
 }
 
-.grade-2 .class-button { /* Khối 11 - Lime Green */
-    background-color: rgb(50, 205, 50);
+/* Màu viền theo khối */
+.grade-1 .class-button {
+    border: 2px solid #81c784; /* Xanh lá */
+    color: #2e7d32;
 }
-.grade-2 .class-button:hover {
-    background-color: rgb(0, 128, 0);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.grade-2 .class-button {
+    border: 2px solid #64b5f6;
+    color: #1976d2;
 }
-.grade-2 .class-button.active {
-    background-color: rgb(34, 139, 34);
-}
-
-.grade-3 .class-button { /* Khối 12 - Medium Purple */
-    background-color: rgb(147, 112, 219);
-}
-.grade-3 .class-button:hover {
-    background-color: rgb(123, 104, 238);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-.grade-3 .class-button.active {
-    background-color: rgb(106, 90, 205);
+.grade-3 .class-button {
+    border: 2px solid #ffb74d;
+    color: #ef6c00;
 }
 
-/* Danh sách lớp */
+.class-button:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+/* Phần in ấn */
 #print_class {
-    background-color: #fff;
-    padding: 25px; /* Tăng padding cho thoáng */
-    border-radius: 12px; /* Bo góc mềm hơn */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Đổ bóng sâu hơn */
-}
-#print_class .fs-3 {
-    color: rgb(30, 144, 255); /* Dodger Blue */
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
-}
-#name_class, #quantity {
-    font-size: 1.2rem; /* Tăng kích thước chữ */
-    font-weight: 500;
-    color: rgb(0, 105, 148); /* Xanh đậm */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
 }
 
-/* Bảng danh sách học sinh */
-#table_print_class {
-    border-radius: 10px; /* Bo góc mềm hơn */
-    overflow: hidden;
-    font-size: 1.1rem; /* Tăng kích thước chữ cho toàn bộ bảng */
-}
-#table_print_class th {
-    background-color: rgb(30, 144, 255);
-    color: white;
-    padding: 12px; /* Tăng padding */
-    text-align: center;
-    font-size: 1.1rem; /* Tăng kích thước chữ cho tiêu đề cột */
-}
-#table_print_class td {
-    background-color: rgb(240, 248, 255);
-    padding: 12px; /* Tăng padding */
-    text-align: center;
-    font-size: 1.1rem; /* Tăng kích thước chữ cho ô dữ liệu */
-}
-#table_print_class tr:hover {
-    background-color: rgb(173, 216, 230);
-}
-
-/* Thông báo không có học sinh */
 #no_student {
-    display: none;
-    font-size: 1.3rem; /* Tăng kích thước chữ */
-    font-weight: bold;
-    color: rgb(0, 105, 148);
-    padding: 20px; /* Tăng padding */
-    border-radius: 8px; /* Bo góc mềm hơn */
-    background-color: rgb(173, 216, 230);
-    border: 1px solid rgb(30, 144, 255);
-    margin-top: 25px; /* Tăng khoảng cách trên */
+    color: #f44336;
+    padding: 15px;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
 }
-
-/* Icon */
-i {
-    vertical-align: middle;
-    margin-right: 6px; /* Tăng khoảng cách nhẹ */
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .class-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 cột trên mobile */
-    }
-    .class-button {
-        font-size: 0.9rem; /* Tăng nhẹ kích thước chữ */
-        padding: 6px 10px;
-        height: 50px; /* Giảm chiều cao về mức hợp lý */
-    }
-    #table_print_class th, #table_print_class td {
-        padding: 8px; /* Giảm padding cho mobile */
-        font-size: 0.9rem; /* Tăng nhẹ kích thước chữ */
-    }
-    .card-header.grade-1 h5, .card-header.grade-2 h5, .card-header.grade-3 h5 {
-        font-size: 1.5rem; /* Giảm kích thước chữ trên mobile */
-    }
-}
-/* Thêm vào cuối file */
-#print_class.container {
-    padding: 0;
-    margin: 20px auto; /* Căn giữa và tạo khoảng cách hợp lý */
-    max-width: 95%; /* Giới hạn chiều rộng */
+/* Tiêu đề in danh sách lớp */
+#print_class .fs-3 {
+    background: linear-gradient(135deg, #2196F3, #1976D2); /* Xanh dương */
+    color: white !important;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
 }

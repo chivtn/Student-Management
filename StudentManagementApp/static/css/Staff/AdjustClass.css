@@ -1,172 +1,85 @@
-/* Tổng quan giao diện */
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f7fa; /* Nền nhẹ nhàng */
-}
-
-/* Container chính */
-.container-fluid {
-    padding: 0 20px;
-}
-
-/* Card */
-.card {
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s;
-}
-.card:hover {
-    transform: translateY(-5px);
-}
-
-/* Card header và tiêu đề khối */
-.card-header.grade-1 { /* Khối 10 - Hot Pink */
-    background-color: rgb(255, 105, 180); /* Hot Pink */
-    color: white;
-    border-bottom: 2px solid rgb(218, 44, 138); /* Hồng đậm hơn */
-}
-.card-header.grade-2 { /* Khối 11 - Lime Green */
-    background-color: rgb(50, 205, 50); /* Lime Green */
-    color: white;
-    border-bottom: 2px solid rgb(34, 139, 34); /* Xanh lá đậm */
-}
-.card-header.grade-3 { /* Khối 12 - Medium Purple */
-    background-color: rgb(147, 112, 219); /* Medium Purple */
-    color: white; /* Chữ trắng để dễ đọc trên nền tím */
-    border-bottom: 2px solid rgb(106, 90, 205); /* Tím đậm hơn */
-}
-
-/* Tiêu đề phần tìm kiếm */
-h4 {
-    color: rgb(0, 191, 255); /* Deep Sky Blue */
-    font-weight: bold;
-}
-
-/* Student list container */
+/* Bỏ các phần không sử dụng */
 .student-list-container {
-    max-height: 60vh;
-    overflow-y: auto;
-    border: 1px solid rgb(0, 191, 255); /* Deep Sky Blue */
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 15px;
-    background-color: #fff;
+    margin-top: 15px;
+    background: #f8f9fa;
 }
 
-/* Bảng học sinh */
-.table-hover tbody tr:hover {
-    background-color: rgb(173, 216, 230); /* Xanh nhạt khi hover */
-    cursor: pointer;
-}
-.table-light th {
-    background-color: rgb(0, 191, 255); /* Deep Sky Blue */
-    color: white;
-}
-#studentList td button {
-    padding: 3px 8px;
-    font-size: 0.875rem;
-    background-color: rgb(0, 191, 255); /* Deep Sky Blue */
-    border-color: rgb(0, 191, 255);
-}
-#studentList td button:hover {
-    background-color: rgb(0, 154, 205); /* Xanh nước đậm hơn */
-}
-
-/* Form select */
-.form-select {
-    border-color: rgb(0, 191, 255); /* Deep Sky Blue */
-}
-.form-select:focus {
-    border-color: rgb(0, 154, 205); /* Xanh nước đậm */
-    box-shadow: 0 0 5px rgba(0, 154, 205, 0.5);
-}
-.form-select option:checked {
-    background-color: rgb(173, 216, 230); /* Xanh nhạt */
-}
-
-/* Input tìm kiếm */
-.input-group .form-control {
-    border-color: rgb(0, 191, 255); /* Deep Sky Blue */
-}
-.input-group .form-control:focus {
-    border-color: rgb(0, 154, 205); /* Xanh nước đậm */
-    box-shadow: 0 0 5px rgba(0, 154, 205, 0.5);
-}
-.input-group .btn-primary {
-    background-color: rgb(0, 191, 255); /* Deep Sky Blue */
-    border-color: rgb(0, 191, 255);
-}
-.input-group .btn-primary:hover {
-    background-color: rgb(0, 154, 205); /* Xanh nước đậm */
-}
-
-/* Grid lớp */
 .class-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 8px;
-    margin-bottom: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    padding: 10px 0;
 }
 
-/* Nút lớp cho từng khối */
+/* Màu sắc theo khối */
+.grade-1 .class-option {
+    background-color: #c8e6c9; /* Xanh lá nhạt */
+    border-color: #81c784; /* Xanh lá đậm */
+    color: #2e7d32;
+}
+
+.grade-2 .class-option {
+    background-color: #bbdefb; /* Xanh dương nhạt */
+    border-color: #64b5f6;
+    color: #1976d2;
+}
+
+.grade-3 .class-option {
+    background-color: #ffe0b2; /* Cam nhạt */
+    border-color: #ffb74d;
+    color: #ef6c00;
+}
+
 .class-option {
-    padding: 6px;
-    font-size: 0.9rem;
-    text-align: center;
     transition: all 0.2s;
-    border: none; /* Xóa viền */
-    color: white; /* Chữ trắng để nổi bật trên nền màu */
-}
-.grade-1 .class-option { /* Khối 10 - Hot Pink */
-    background-color: rgb(255, 105, 180); /* Hot Pink */
-}
-.grade-1 .class-option:hover {
-    background-color: rgb(255, 20, 147); /* Deep Pink */
-}
-.grade-1 .class-option.active {
-    background-color: rgb(218, 44, 138); /* Hồng đậm hơn */
+    border-radius: 6px;
 }
 
-.grade-2 .class-option { /* Khối 11 - Lime Green */
-    background-color: rgb(50, 205, 50); /* Lime Green */
-}
-.grade-2 .class-option:hover {
-    background-color: rgb(0, 128, 0); /* Green */
-}
-.grade-2 .class-option.active {
-    background-color: rgb(34, 139, 34); /* Xanh lá đậm */
-}
-
-.grade-3 .class-option { /* Khối 12 - Medium Purple */
-    background-color: rgb(147, 112, 219); /* Medium Purple */
-}
-.grade-3 .class-option:hover {
-    background-color: rgb(123, 104, 238); /* Medium Slate Blue */
-}
-.grade-3 .class-option.active {
-    background-color: rgb(106, 90, 205); /* Slate Blue */
+.class-option:hover:not(.disabled) {
+    transform: translateY(-1px);
+    opacity: 0.9;
 }
 
 .class-option.disabled {
-    opacity: 0.6;
+    background-color: #eeeeee;
+    color: #9e9e9e;
     cursor: not-allowed;
-    background-color: #e9ecef;
-    color: #6c757d;
 }
 
-/* Nút chuyển lớp */
-#btnChangeClass {
-    background-color: rgb(0, 191, 255); /* Deep Sky Blue */
-    border-color: rgb(0, 191, 255);
-}
-#btnChangeClass:hover {
-    background-color: rgb(0, 154, 205); /* Xanh nước đậm */
-}
-#btnChangeClass:disabled {
-    background-color: #b0e0e6; /* Xanh nhạt khi disabled */
-    border-color: #b0e0e6;
+#studentList th {
+    background-color: #e3f2fd !important;
 }
 
-/* Kết quả chuyển lớp */
-#changeClassResult {
-    color: rgb(0, 154, 205); /* Xanh nước đậm */
+/* Nút chính */
+.btn-primary {
+    background-color: #2196f3;
+    border-color: #2196f3;
+}
+
+.btn-success {
+    background-color: #4caf50; /* Xanh lá */
+    border-color: #4caf50;
+}
+
+.card-header {
+    background-color: #f5f5f5 !important;
+    border-bottom: 2px solid #eeeeee;
+}
+/* Tiêu đề "Tìm kiếm học sinh" */
+#search-student-title {
+    background: linear-gradient(135deg, #2196F3, #1976D2); /* Xanh lá */
+    color: white !important;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+/* Tiêu đề "Chuyển lớp học sinh" */
+#transfer-class-title {
+    background: linear-gradient(135deg, #4CAF50, #388E3C); /* Xanh dương */
+    color: white !important;
+    padding: 12px;
+    border-radius: 8px;
 }
