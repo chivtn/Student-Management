@@ -24,7 +24,7 @@
 
                 {% elif current_user.role == Role.STAFF %}
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('staff.AddStudent') }}">Tiếp nhận học sinh</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('staff.CreateClassList') }}">Lập danh sách lớp</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('staff.CreateClassList') }}">Xem danh sách lớp</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('staff.AdjustClass') }}">Điều chỉnh lớp học sinh</a></li>
 
                 {% endif %}
