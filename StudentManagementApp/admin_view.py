@@ -62,7 +62,10 @@ class SubjectView(Authenticated_Admin):
             subjects = Subject.query.filter(Subject.name.ilike(f"%{keyword}%")).all()
         else:
             subjects = Subject.query.all()
-        return self.render('admin/subject_view.html', data=subjects)
+
+        gradelevels = GradeLevel.query.all()
+        return self.render('admin/subject_view.html', data=subjects, gradelevels=gradelevels)
+
 
     @expose('/subject/create', methods=['POST'])
     def create_subject(self):
@@ -77,12 +80,16 @@ class SubjectView(Authenticated_Admin):
         if existing:
             flash(f"Môn học '{name}' đã tồn tại!", "danger")
         else:
+            gradelevel_id = request.form.get('gradelevel_id', type=int)
+
             subject = Subject(
                 name=name,
                 score15P_column_number=request.form.get('score15', type=int),
                 score1T_column_number=request.form.get('score1tiet', type=int),
-                scoreF_column_number=request.form.get('score_final', type=int)
+                scoreF_column_number=request.form.get('score_final', type=int),
+                gradelevel_id=gradelevel_id if gradelevel_id else None
             )
+
             db.session.add(subject)
             try:
                 db.session.commit()
@@ -93,34 +100,7 @@ class SubjectView(Authenticated_Admin):
 
         return redirect(url_for('.index'))
 
-    @expose('/subject/create', methods=['POST'])
-    def create_subject(self):
-        name = request.form.get('name', '').strip()
-        normalized_name = name.lower()
 
-        from flask import flash
-        from sqlalchemy import func
-
-        # Kiểm tra trùng tên không phân biệt hoa thường
-        existing = Subject.query.filter(func.lower(Subject.name) == normalized_name).first()
-        if existing:
-            flash(f"Môn học '{name}' đã tồn tại!", "danger")
-        else:
-            subject = Subject(
-                name=name,
-                score15P_column_number=request.form.get('score15', type=int),
-                score1T_column_number=request.form.get('score1tiet', type=int),
-                scoreF_column_number=request.form.get('score_final', type=int)
-            )
-            db.session.add(subject)
-            try:
-                db.session.commit()
-                flash(f"Đã thêm môn học '{name}' thành công.", "success")
-            except Exception as e:
-                db.session.rollback()
-                flash("Đã xảy ra lỗi khi thêm môn học.", "danger")
-
-        return redirect(url_for('.index'))
 
     @expose('/subject/update/<int:subject_id>', methods=['POST'])
     def update_subject(self, subject_id):

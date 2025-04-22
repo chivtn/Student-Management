@@ -6,17 +6,18 @@
 <div class="container mt-5">
     <h2 class="mb-4 text-primary fw-bold">Quản lý môn học</h2>
 
-    <!-- Thông báo thành công -->
-    {% with messages = get_flashed_messages() %}
+    <!-- Thông báo thành công hoặc lỗi -->
+    {% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
-    {% for msg in messages %}
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {% for category, msg in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
         {{ msg }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endfor %}
     {% endif %}
     {% endwith %}
+
 
     <!-- Form tìm kiếm + nút xem tất cả -->
     <div class="d-flex mb-4 gap-2 ms-auto justify-content-end">
@@ -31,8 +32,9 @@
     </div>
 
     <!-- Form thêm môn học mới -->
-    <form method="POST" action="{{ url_for('subjectview.create_subject') }}" class="row g-3 mb-5">
-        <div class="col-md-3">
+    <!-- Form thêm môn học mới -->
+    <form method="POST" action="{{ url_for('subjectview.create_subject') }}" class="row g-3 mb-4 align-items-end">
+        <div class="col-md-2">
             <input type="text" name="name" class="form-control" placeholder="Tên môn học" required>
         </div>
         <div class="col-md-2">
@@ -44,8 +46,18 @@
         <div class="col-md-2">
             <input type="number" name="score_final" class="form-control" placeholder="Cuối kỳ" min="0" max="1" required>
         </div>
-        <div class="col-md-3 d-grid">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-plus-circle me-1"></i>Thêm môn học</button>
+        <div class="col-md-2">
+            <select name="gradelevel_id" class="form-select">
+                <option value="">Tất cả các khối</option>
+                {% for g in gradelevels %}
+                <option value="{{ g.id }}">Khối {{ g.name.value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-1"></i>Thêm môn học
+            </button>
         </div>
     </form>
 
@@ -59,6 +71,7 @@
             <th>15 phút</th>
             <th>1 tiết</th>
             <th>Cuối kỳ</th>
+            <th>Khối</th>
             <th>Thao tác</th>
         </tr>
         </thead>
@@ -75,6 +88,13 @@
                            min="0" max="10" required></td>
                 <td><input type="number" name="score_final" class="form-control" value="{{ row.scoreF_column_number }}"
                            min="0" max="1" required></td>
+                <td>
+                    {% if row.gradelevel %}
+                    Khối {{ row.gradelevel.name.value }}
+                    {% else %}
+                    Tất cả
+                    {% endif %}
+                </td>
                 <td class="d-flex justify-content-center gap-2">
                     <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-save me-1"></i>Lưu</button>
             </form>
