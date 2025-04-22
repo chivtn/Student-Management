@@ -137,11 +137,7 @@ class AcademicYear(db.Model):
 class Subject(db.Model):
     __tablename__ = 'subject'
     id = Column(Integer, primary_key=True, autoincrement=True)
-<<<<<<< HEAD
     name = Column(String(100), nullable=False, unique=True)
-=======
-    name = Column(String(100), nullable=False)
->>>>>>> f9d011f8ebd2edba4774fb8bec3072317358d82a
     gradelevel_id = Column(Integer, ForeignKey('gradelevel.id'))
 
     score15P_column_number = Column(Integer, nullable=True)  # Số điểm 15p tối đa

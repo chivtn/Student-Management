@@ -64,7 +64,6 @@ class SubjectView(Authenticated_Admin):
             subjects = Subject.query.all()
         return self.render('admin/subject_view.html', data=subjects)
 
-<<<<<<< HEAD
     @expose('/subject/create', methods=['POST'])
     def create_subject(self):
         name = request.form.get('name', '').strip()
@@ -94,35 +93,39 @@ class SubjectView(Authenticated_Admin):
 
         return redirect(url_for('.index'))
 
-=======
-
     @expose('/subject/create', methods=['POST'])
     def create_subject(self):
-        name = request.form.get('name')
-        score15 = request.form.get('score15', type=int)
-        score1tiet = request.form.get('score1tiet', type=int)
-        score_final = request.form.get('score_final', type=int)
+        name = request.form.get('name', '').strip()
+        normalized_name = name.lower()
 
-        if name:
+        from flask import flash
+        from sqlalchemy import func
+
+        # Kiểm tra trùng tên không phân biệt hoa thường
+        existing = Subject.query.filter(func.lower(Subject.name) == normalized_name).first()
+        if existing:
+            flash(f"Môn học '{name}' đã tồn tại!", "danger")
+        else:
             subject = Subject(
                 name=name,
-                score15P_column_number=score15,
-                score1T_column_number=score1tiet,
-                scoreF_column_number=score_final
+                score15P_column_number=request.form.get('score15', type=int),
+                score1T_column_number=request.form.get('score1tiet', type=int),
+                scoreF_column_number=request.form.get('score_final', type=int)
             )
             db.session.add(subject)
-            db.session.commit()
-            from flask import flash
-            flash(f"Đã thêm môn học '{name}' thành công.")
+            try:
+                db.session.commit()
+                flash(f"Đã thêm môn học '{name}' thành công.", "success")
+            except Exception as e:
+                db.session.rollback()
+                flash("Đã xảy ra lỗi khi thêm môn học.", "danger")
+
         return redirect(url_for('.index'))
 
-
->>>>>>> f9d011f8ebd2edba4774fb8bec3072317358d82a
     @expose('/subject/update/<int:subject_id>', methods=['POST'])
     def update_subject(self, subject_id):
         subject = Subject.query.get(subject_id)
         if subject:
-<<<<<<< HEAD
             new_name = request.form.get('name')
             score15 = request.form.get('score15', type=int)
             score1tiet = request.form.get('score1tiet', type=int)
@@ -130,7 +133,7 @@ class SubjectView(Authenticated_Admin):
 
             from flask import flash
 
-            # kiểm tra tồn tại
+            # Nếu đổi tên, kiểm tra tên mới đã tồn tại chưa (không phân biệt hoa thường)
             if new_name.lower() != subject.name.lower() and Subject.query.filter(Subject.name.ilike(new_name)).first():
                 flash(f"Môn học '{new_name}' đã tồn tại!", "danger")
             else:
@@ -143,18 +146,6 @@ class SubjectView(Authenticated_Admin):
 
         return redirect(url_for('.index'))
 
-=======
-            subject.name = request.form.get('name')
-            subject.score15P_column_number = request.form.get('score15', type=int)
-            subject.score1T_column_number = request.form.get('score1tiet', type=int)
-            subject.scoreF_column_number = request.form.get('score_final', type=int)
-            db.session.commit()
-            from flask import flash
-            flash(f"Cập nhật môn học '{subject.name}' thành công.")
-        return redirect(url_for('.index'))
-
-
->>>>>>> f9d011f8ebd2edba4774fb8bec3072317358d82a
     @expose('/subject/delete/<int:subject_id>', methods=['POST'])
     def delete_subject(self, subject_id):
         subject = Subject.query.get(subject_id)
