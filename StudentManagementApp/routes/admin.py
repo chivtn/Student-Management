@@ -21,7 +21,14 @@ def StatisticsScore():
     if not all([subject, semester, year]):
         return jsonify({'status': 404, 'content': 'Dữ liệu không hợp lệ'}), 404
 
-    classes = Classroom.query.filter_by(academic_year_id=year.id).all()
+    # Nếu môn học có gradelevel_id, chỉ lấy lớp thuộc khối đó
+    if subject.gradelevel_id:
+        classes = Classroom.query.filter_by(
+            academic_year_id=year.id,
+            gradelevel_id=subject.gradelevel_id
+        ).all()
+    else:
+        classes = Classroom.query.filter_by(academic_year_id=year.id).all()
 
     result = {
         0: {
