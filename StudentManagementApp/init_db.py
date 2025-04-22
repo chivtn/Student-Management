@@ -114,13 +114,42 @@ with app.app_context():
     # --- Điểm mẫu ---
     score_sheets = ScoreSheet.query.all()
     for sheet in score_sheets:
+        subject = db.session.get(Subject, sheet.subject_id)
+
+        # Giả lập mức độ khó của từng môn
+        if subject.name == "Toán":
+            fif_min = (3, 7)
+            one_period = (4, 8)
+            final = (4, 7)
+        elif subject.name == "Văn":
+            fif_min = (6, 10)
+            one_period = (6, 9)
+            final = (7, 10)
+        elif subject.name == "Anh":
+            fif_min = (5, 9)
+            one_period = (5, 9)
+            final = (6, 9)
+        elif subject.name == "Lý":
+            fif_min = (4, 9)
+            one_period = (4, 9)
+            final = (4, 9)
+        elif subject.name == "GDCD":
+            fif_min = (8, 10)
+            one_period = (8, 10)
+            final = (9, 10)
+        else:
+            # mặc định
+            fif_min = (5, 10)
+            one_period = (5, 9)
+            final = (5, 10)
+
         db.session.add_all([
-            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FIFTEEN_MIN, value=random.uniform(5, 10)),
-            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FIFTEEN_MIN, value=random.uniform(4, 10)),
-            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FIFTEEN_MIN, value=random.uniform(6, 10)),
-            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.ONE_PERIOD, value=random.uniform(5, 10)),
-            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.ONE_PERIOD, value=random.uniform(5, 9)),
-            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FINAL, value=random.uniform(5, 10)),
+            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FIFTEEN_MIN, value=random.uniform(*fif_min)),
+            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FIFTEEN_MIN, value=random.uniform(*fif_min)),
+            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FIFTEEN_MIN, value=random.uniform(*fif_min)),
+            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.ONE_PERIOD, value=random.uniform(*one_period)),
+            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.ONE_PERIOD, value=random.uniform(*one_period)),
+            ScoreDetail(score_sheet_id=sheet.id, type=ScoreType.FINAL, value=random.uniform(*final)),
         ])
 
     db.session.commit()
