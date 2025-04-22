@@ -64,6 +64,7 @@ class SubjectView(Authenticated_Admin):
             subjects = Subject.query.all()
         return self.render('admin/subject_view.html', data=subjects)
 
+<<<<<<< HEAD
     @expose('/subject/create', methods=['POST'])
     def create_subject(self):
         name = request.form.get('name', '').strip()
@@ -93,10 +94,35 @@ class SubjectView(Authenticated_Admin):
 
         return redirect(url_for('.index'))
 
+=======
+
+    @expose('/subject/create', methods=['POST'])
+    def create_subject(self):
+        name = request.form.get('name')
+        score15 = request.form.get('score15', type=int)
+        score1tiet = request.form.get('score1tiet', type=int)
+        score_final = request.form.get('score_final', type=int)
+
+        if name:
+            subject = Subject(
+                name=name,
+                score15P_column_number=score15,
+                score1T_column_number=score1tiet,
+                scoreF_column_number=score_final
+            )
+            db.session.add(subject)
+            db.session.commit()
+            from flask import flash
+            flash(f"Đã thêm môn học '{name}' thành công.")
+        return redirect(url_for('.index'))
+
+
+>>>>>>> f9d011f8ebd2edba4774fb8bec3072317358d82a
     @expose('/subject/update/<int:subject_id>', methods=['POST'])
     def update_subject(self, subject_id):
         subject = Subject.query.get(subject_id)
         if subject:
+<<<<<<< HEAD
             new_name = request.form.get('name')
             score15 = request.form.get('score15', type=int)
             score1tiet = request.form.get('score1tiet', type=int)
@@ -117,6 +143,18 @@ class SubjectView(Authenticated_Admin):
 
         return redirect(url_for('.index'))
 
+=======
+            subject.name = request.form.get('name')
+            subject.score15P_column_number = request.form.get('score15', type=int)
+            subject.score1T_column_number = request.form.get('score1tiet', type=int)
+            subject.scoreF_column_number = request.form.get('score_final', type=int)
+            db.session.commit()
+            from flask import flash
+            flash(f"Cập nhật môn học '{subject.name}' thành công.")
+        return redirect(url_for('.index'))
+
+
+>>>>>>> f9d011f8ebd2edba4774fb8bec3072317358d82a
     @expose('/subject/delete/<int:subject_id>', methods=['POST'])
     def delete_subject(self, subject_id):
         subject = Subject.query.get(subject_id)
