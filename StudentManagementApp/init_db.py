@@ -116,7 +116,6 @@ with app.app_context():
     for sheet in score_sheets:
         subject = db.session.get(Subject, sheet.subject_id)
 
-        # Giả lập mức độ khó của từng môn
         if subject.name == "Toán":
             fif_min = (3, 7)
             one_period = (4, 8)
