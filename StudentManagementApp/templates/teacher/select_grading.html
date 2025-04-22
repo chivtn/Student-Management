@@ -72,7 +72,7 @@
                                         <input type="number" name="score_15_{{ s.id }}_{{ loop.index }}"
                                                value="{{ score.value }}"
                                                class="form-control form-control-sm score-input"
-                                               step="0.1" min="0" max="10" {% if score.readonly %}readonly{% endif %}>
+                                               step="0.0001" min="0" max="10" {% if score.readonly %}readonly{% endif %}>
                                         {% if not score.readonly %}
                                         <button class="btn btn-sm btn-outline-danger" type="button"
                                                 onclick="this.parentElement.remove(); calculateAverage('{{ s.id }}')">×
@@ -94,7 +94,7 @@
                                         <input type="number" name="score_1tiet_{{ s.id }}_{{ loop.index }}"
                                                value="{{ score.value }}"
                                                class="form-control form-control-sm score-input"
-                                               step="0.1" min="0" max="10" {% if score.readonly %}readonly{% endif %}>
+                                               step="0.0001" min="0" max="10" {% if score.readonly %}readonly{% endif %}>
                                         {% if not score.readonly %}
                                         <button class="btn btn-sm btn-outline-danger" type="button"
                                                 onclick="this.parentElement.remove(); calculateAverage('{{ s.id }}')">×

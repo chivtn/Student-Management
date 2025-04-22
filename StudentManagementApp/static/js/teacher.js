@@ -1,9 +1,9 @@
-// ✅ Tính điểm trung bình
+// Tính điểm trung bình
 function calculateAverage(studentId) {
     const inputs15 = document.querySelectorAll(`#score15_${studentId} input`);
     const inputs1tiet = document.querySelectorAll(`#score1tiet_${studentId} input`);
-    const inputFinal = document.querySelector(`input[name='score_final_${studentId}']`);
-    const avgSpan = document.getElementById(`avg_${studentId}`);
+    const finalInput = document.querySelector(`input[name='score_final_${studentId}']`);
+    const avgDisplay = document.getElementById(`avg_${studentId}`);
 
     let sum = 0, count = 0;
 
@@ -23,43 +23,18 @@ function calculateAverage(studentId) {
         }
     });
 
-    if (inputFinal && inputFinal.value !== '') {
-        const val = parseFloat(inputFinal.value);
+    if (finalInput && finalInput.value !== '') {
+        const val = parseFloat(finalInput.value);
         if (!isNaN(val)) {
             sum += val * 3;
             count += 3;
         }
     }
 
-    if (count > 0) {
-        const avg = (sum / count).toFixed(2);
-        avgSpan.textContent = avg;
-    } else {
-        avgSpan.textContent = '-';
-    }
+    avgDisplay.textContent = count > 0 ? (sum / count).toFixed(2) : '-';
 }
 
-//  Khi nhấn Lưu / Lưu nháp: Làm tròn toàn bộ điểm
-document.addEventListener('submit', function (e) {
-    if (e.target.tagName === 'FORM') {
-        e.target.querySelectorAll('.score-input').forEach(input => {
-            let val = parseFloat(input.value);
-            if (!isNaN(val)) {
-                input.value = val.toFixed(2);
-            }
-        });
-    }
-});
-
-// Tự động tính lại trung bình khi người dùng nhập
-document.addEventListener('input', function (e) {
-    if (e.target.classList.contains('score-input')) {
-        const studentId = e.target.name.split('_')[2];
-        calculateAverage(studentId);
-    }
-});
-
-// Thêm ô điểm mới
+//Thêm ô nhập điểm mới
 window.addScoreInput = function (studentId, type) {
     const containerId = type === '15' ? `score15_${studentId}` : `score1tiet_${studentId}`;
     const container = document.getElementById(containerId);
@@ -72,11 +47,11 @@ window.addScoreInput = function (studentId, type) {
 
     const input = document.createElement("input");
     input.type = "number";
-    input.step = "0.01";
+    input.name = `score_${type}_${studentId}_${Date.now()}`;
+    input.className = "form-control score-input";
+    input.step = "0.0001";
     input.min = "0";
     input.max = "10";
-    input.className = "form-control score-input";
-    input.name = `score_${type}_${studentId}_${Date.now()}`;
     input.addEventListener('input', () => calculateAverage(studentId));
 
     const wrapper = document.createElement("div");
@@ -96,9 +71,17 @@ window.addScoreInput = function (studentId, type) {
     container.appendChild(wrapper);
 };
 
-// ✅ Khi load trang, tính trung bình ban đầu
-document.addEventListener('DOMContentLoaded', () => {
+// Khi trang load: gắn sự kiện tính lại trung bình cho tất cả input
+document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll('.score-input').forEach(input => {
-        input.dispatchEvent(new Event('input'));
+        input.addEventListener('input', (e) => {
+            const parts = e.target.name.split('_');
+            const studentId = parts[2];
+            calculateAverage(studentId);
+        });
+
+        // Gọi luôn để hiển thị trung bình ngay từ đầu
+        const studentId = input.name.split('_')[2];
+        calculateAverage(studentId);
     });
 });

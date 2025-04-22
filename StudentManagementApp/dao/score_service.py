@@ -37,29 +37,32 @@ def parse_combined_scores(sheet, drafts):
         "score_final": None,
         "avg": None,
     }
+
     official_15 = []
     official_1t = []
     official_final = None
 
     if sheet:
         for detail in sheet.details:
+            val = round(detail.value, 2)
             if detail.type == ScoreType.FIFTEEN_MIN:
-                official_15.append(detail.value)
-                data["score_15"].append({"value": detail.value, "readonly": True})
+                official_15.append(val)
+                data["score_15"].append({"value": val, "readonly": True})
             elif detail.type == ScoreType.ONE_PERIOD:
-                official_1t.append(detail.value)
-                data["score_1tiet"].append({"value": detail.value, "readonly": True})
+                official_1t.append(val)
+                data["score_1tiet"].append({"value": val, "readonly": True})
             elif detail.type == ScoreType.FINAL:
-                official_final = detail.value
-                data["score_final"] = {"value": detail.value, "readonly": True}
+                official_final = val
+                data["score_final"] = {"value": val, "readonly": True}
 
     for d in drafts:
-        if d.type == ScoreType.FIFTEEN_MIN and d.value not in official_15:
-            data["score_15"].append({"value": d.value, "readonly": False})
-        elif d.type == ScoreType.ONE_PERIOD and d.value not in official_1t:
-            data["score_1tiet"].append({"value": d.value, "readonly": False})
+        val = round(d.value, 2)
+        if d.type == ScoreType.FIFTEEN_MIN and val not in official_15:
+            data["score_15"].append({"value": val, "readonly": False})
+        elif d.type == ScoreType.ONE_PERIOD and val not in official_1t:
+            data["score_1tiet"].append({"value": val, "readonly": False})
         elif d.type == ScoreType.FINAL and official_final is None:
-            data["score_final"] = {"value": d.value, "readonly": False}
+            data["score_final"] = {"value": val, "readonly": False}
 
     s15 = [x["value"] for x in data["score_15"]]
     s1t = [x["value"] for x in data["score_1tiet"]]
@@ -68,6 +71,7 @@ def parse_combined_scores(sheet, drafts):
         data["avg"] = compute_weighted_average(s15, s1t, final)
 
     return data
+
 
 def compute_weighted_average(s15, s1t, final):
     avg_15 = sum(s15) / len(s15)
@@ -82,6 +86,8 @@ def store_scores(form_data, students, academic_year_id, semester_id, subject_id)
     db.session.commit()
 
 def save_draft_scores(form_data, students, academic_year_id, semester_id, subject_id):
+    max_15, max_1t = get_score_limits(subject_id)
+
     for student in students:
         DraftScore.query.filter_by(
             student_id=student.id,
@@ -90,20 +96,33 @@ def save_draft_scores(form_data, students, academic_year_id, semester_id, subjec
             academic_year_id=academic_year_id
         ).delete()
 
+        # Lấy điểm chính thức
+        official_scores = ScoreDetail.query.join(ScoreSheet).filter(
+            ScoreSheet.student_id == student.id,
+            ScoreSheet.subject_id == subject_id,
+            ScoreSheet.semester_id == semester_id,
+            ScoreSheet.academic_year_id == academic_year_id
+        ).all()
+        official_15 = [round(s.value, 2) for s in official_scores if s.type == ScoreType.FIFTEEN_MIN]
+        official_1t = [round(s.value, 2) for s in official_scores if s.type == ScoreType.ONE_PERIOD]
+        official_final = next((round(s.value, 2) for s in official_scores if s.type == ScoreType.FINAL), None)
+
         draft_scores = []
-        max_15, max_1t = get_score_limits(subject_id)
+
+        # Điểm 15 phút và 1 tiết
         draft_scores.extend(extract_unique_scores(
             form_data, student.id, subject_id, semester_id, academic_year_id,
-            '15', ScoreType.FIFTEEN_MIN, max_15
+            '15', ScoreType.FIFTEEN_MIN, max_15, official_15
         ))
         draft_scores.extend(extract_unique_scores(
             form_data, student.id, subject_id, semester_id, academic_year_id,
-            '1tiet', ScoreType.ONE_PERIOD, max_1t
+            '1tiet', ScoreType.ONE_PERIOD, max_1t, official_1t
         ))
 
+        # Điểm cuối kỳ
         final_key = f'score_final_{student.id}'
         final_val = form_data.get(final_key, type=float)
-        if final_val is not None:
+        if final_val is not None and (official_final is None):
             draft_scores.append(DraftScore(
                 student_id=student.id,
                 subject_id=subject_id,
@@ -114,31 +133,38 @@ def save_draft_scores(form_data, students, academic_year_id, semester_id, subjec
             ))
 
         db.session.add_all(draft_scores)
+
     db.session.commit()
 
-def extract_unique_scores(form_data, student_id, subject_id, semester_id, academic_year_id, prefix, score_type, max_count):
+
+def extract_unique_scores(form_data, student_id, subject_id, semester_id, academic_year_id,
+                          prefix, score_type, max_count, official_values):
     pattern = re.compile(f"score_{prefix}_{student_id}_(.+)")
     scores = []
     count = 0
+
     for key, val in form_data.items():
         if pattern.match(key):
             try:
                 value = float(val)
-                if 0 <= value <= 10:
+                value_rounded = round(value, 2)
+                if 0 <= value <= 10 and value_rounded not in official_values:
                     scores.append(DraftScore(
                         student_id=student_id,
                         subject_id=subject_id,
                         semester_id=semester_id,
                         academic_year_id=academic_year_id,
                         type=score_type,
-                        value=value
+                        value=value_rounded
                     ))
                     count += 1
                     if count >= max_count:
                         break
             except:
                 continue
+
     return scores
+
 
 def delete_draft_scores(student_id, subject_id, semester_id, academic_year_id):
     DraftScore.query.filter_by(
