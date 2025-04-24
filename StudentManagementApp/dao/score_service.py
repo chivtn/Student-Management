@@ -222,11 +222,32 @@ def extract_score_values(form_data, student_id, prefix, max_count):
                 continue
     return values
 
+# def calculate_avg_score(student_id, academic_year_id, semester_id):
+#     scores = db.session.query(ScoreDetail.value).join(ScoreSheet).filter(
+#         ScoreSheet.student_id == student_id,
+#         ScoreSheet.academic_year_id == academic_year_id,
+#         ScoreSheet.semester_id == semester_id
+#     ).all()
+#     values = [s.value for s in scores]
+#     return sum(values) / len(values) if values else None
+
 def calculate_avg_score(student_id, academic_year_id, semester_id):
-    scores = db.session.query(ScoreDetail.value).join(ScoreSheet).filter(
+    scores = db.session.query(ScoreDetail.value, ScoreDetail.type).join(ScoreSheet).filter(
         ScoreSheet.student_id == student_id,
         ScoreSheet.academic_year_id == academic_year_id,
         ScoreSheet.semester_id == semester_id
     ).all()
-    values = [s.value for s in scores]
-    return sum(values) / len(values) if values else None
+
+    s15 = [v for v, t in scores if t == ScoreType.FIFTEEN_MIN]
+    s1t = [v for v, t in scores if t == ScoreType.ONE_PERIOD]
+    finals = [v for v, t in scores if t == ScoreType.FINAL]
+
+    if not s15 or not s1t or not finals:
+        return None
+
+    avg_15 = sum(s15) / len(s15)
+    avg_1t = sum(s1t) / len(s1t)
+    avg_final = finals[0]
+
+    weighted_avg = (avg_15 * 1 + avg_1t * 2 + avg_final * 3) / 6
+    return round(weighted_avg, 2)
