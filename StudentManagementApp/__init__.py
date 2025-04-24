@@ -7,9 +7,9 @@ app = Flask(__name__)
 app.secret_key = 'GHFGH&*%^$^*(JHFGHF&Y*R%^$%$^&*TGYGJHFHGVJHGY'
 
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:01676831139Chi%40@localhost:3306/studentdb?charset=utf8mb4"
+#app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:01676831139Chi%40@localhost:3306/studentdb?charset=utf8mb4"
 #app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:26032004@localhost/studentdb?charset=utf8mb4"
-#app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:askme@localhost:3306/studentdb?charset=utf8mb4"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:askme@localhost:3306/studentdb?charset=utf8mb4"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['nambatdau'] = 2025

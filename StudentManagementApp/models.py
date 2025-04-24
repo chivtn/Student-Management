@@ -81,7 +81,7 @@ class Classroom(db.Model):
 
 class Teacher(db.Model):
     __tablename__ = 'teacher'
-    id = Column(Integer, ForeignKey('user.id'), primary_key=True)\
+    id = Column(Integer, ForeignKey('user.id'), primary_key=True)
 
     subject_id = Column(Integer, ForeignKey('subject.id'), nullable=False)
 
@@ -192,4 +192,29 @@ class Regulation(db.Model):
     min_age = Column(Integer, default=15)
     max_age = Column(Integer, default=20)
     max_class_size = Column(Integer, default=40)
+
+# #xem giáo viên nào dạy lớp nào trong năm học nào
+# class TeachingAssignment(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=False)
+#     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+#     classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'), nullable=False)
+#     academic_year_id = db.Column(db.Integer, db.ForeignKey('academic_year.id'), nullable=False)
+#
+#     teacher = relationship("Teacher", backref="teaching_assignments")
+#     subject = relationship("Subject", backref="teaching_assignments")
+#     classroom = relationship("Classroom", backref="teaching_assignments")
+#     academic_year = relationship("AcademicYear", backref="teaching_assignments")
+#
+# #xem lại lịch sử lớp của học sinh trong từng năm học
+# class EnrollmentHistory(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+#     classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'), nullable=False)
+#     academic_year_id = db.Column(db.Integer, db.ForeignKey('academic_year.id'), nullable=False)
+#     enrolled_at = db.Column(db.DateTime, default=datetime.utcnow)
+#
+#     student = relationship("Student", backref="enrollments")
+#     classroom = relationship("Classroom", backref="enrollments")
+#     academic_year = relationship("AcademicYear", backref="enrollments")
 
