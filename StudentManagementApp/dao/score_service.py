@@ -205,7 +205,7 @@ def extract_unique_scores(form_data, student_id, subject_id, semester_id, academ
             try:
                 value = float(val)
                 value_rounded = round(value, 2)
-                if 0 <= value <= 10:
+                if 0 <= value <= 10: #value_rounded not in official_values#
                     scores.append(DraftScore(
                         student_id=student_id,
                         subject_id=subject_id,
