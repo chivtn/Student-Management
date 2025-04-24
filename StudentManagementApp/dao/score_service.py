@@ -30,50 +30,6 @@ def get_score_sheet(student_id, subject_id, semester_id, academic_year_id):
         academic_year_id=academic_year_id
     ).first()
 
-# def parse_combined_scores(sheet, drafts):
-#     data = {
-#         "score_15": [],
-#         "score_1tiet": [],
-#         "score_final": None,
-#         "avg": None,
-#     }
-#
-#     official_15 = []
-#     official_1t = []
-#     official_final = None
-#
-#     if sheet:
-#         for detail in sheet.details:
-#             val = round(detail.value, 2)
-#             if detail.type == ScoreType.FIFTEEN_MIN:
-#                 official_15.append(val)
-#                 data["score_15"].append({"value": val, "readonly": True})
-#             elif detail.type == ScoreType.ONE_PERIOD:
-#                 official_1t.append(val)
-#                 data["score_1tiet"].append({"value": val, "readonly": True})
-#             elif detail.type == ScoreType.FINAL:
-#                 official_final = val
-#                 data["score_final"] = {"value": val, "readonly": True}
-#
-#     for d in drafts:
-#         val = round(d.value, 2)
-#         if d.type == ScoreType.FIFTEEN_MIN and val not in official_15:
-#             data["score_15"].append({"value": val, "readonly": False})
-#         elif d.type == ScoreType.ONE_PERIOD and val not in official_1t:
-#             data["score_1tiet"].append({"value": val, "readonly": False})
-#         elif d.type == ScoreType.FINAL and official_final is None:
-#             data["score_final"] = {"value": val, "readonly": False}
-#
-#     s15 = [x["value"] for x in data["score_15"]]
-#     s1t = [x["value"] for x in data["score_1tiet"]]
-#     final = data["score_final"]["value"] if data["score_final"] else None
-#     if s15 and s1t and final is not None:
-#         data["avg"] = compute_weighted_average(s15, s1t, final)
-#
-#     return data
-
-from collections import Counter
-
 def parse_combined_scores(sheet, drafts):
     data = {
         "score_15": [],
@@ -99,31 +55,18 @@ def parse_combined_scores(sheet, drafts):
                 official_final = val
                 data["score_final"] = {"value": val, "readonly": True}
 
-    count_15 = Counter(official_15)
-    count_1t = Counter(official_1t)
-    temp_15 = Counter()
-    temp_1t = Counter()
-
     for d in drafts:
         val = round(d.value, 2)
-
-        if d.type == ScoreType.FIFTEEN_MIN:
-            temp_15[val] += 1
-            if temp_15[val] > count_15[val]:
-                data["score_15"].append({"value": val, "readonly": False})
-
-        elif d.type == ScoreType.ONE_PERIOD:
-            temp_1t[val] += 1
-            if temp_1t[val] > count_1t[val]:
-                data["score_1tiet"].append({"value": val, "readonly": False})
-
-        elif d.type == ScoreType.FINAL and data["score_final"] is None:
+        if d.type == ScoreType.FIFTEEN_MIN and val not in official_15:
+            data["score_15"].append({"value": val, "readonly": False})
+        elif d.type == ScoreType.ONE_PERIOD and val not in official_1t:
+            data["score_1tiet"].append({"value": val, "readonly": False})
+        elif d.type == ScoreType.FINAL and official_final is None:
             data["score_final"] = {"value": val, "readonly": False}
 
     s15 = [x["value"] for x in data["score_15"]]
     s1t = [x["value"] for x in data["score_1tiet"]]
     final = data["score_final"]["value"] if data["score_final"] else None
-
     if s15 and s1t and final is not None:
         data["avg"] = compute_weighted_average(s15, s1t, final)
 
@@ -205,7 +148,7 @@ def extract_unique_scores(form_data, student_id, subject_id, semester_id, academ
             try:
                 value = float(val)
                 value_rounded = round(value, 2)
-                if 0 <= value <= 10: #value_rounded not in official_values#
+                if 0 <= value <= 10 and value_rounded not in official_values:
                     scores.append(DraftScore(
                         student_id=student_id,
                         subject_id=subject_id,
